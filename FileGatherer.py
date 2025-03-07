@@ -29,13 +29,29 @@ class FileGatherer:
                 print(f"No link for index {result_index}.")
                 continue
             try:
-                response = requests.get(url)  # Use GET request on URL
+                response = requests.get(url, stream=True)  # Use GET request on URL
             except Exception as e:
                 print("Error on index " + str(result_index) + "\n\tException: ", e)
                 continue
             if url[-3:] == "pdf":
-                FileWriter.FileWriter().write_file("Files\\pdf" + str(result_index) + ".pdf", response.content, 'wb')
-                print(f"Saved PDF directly from index {result_index}.")
+                content_type = response.headers.get("Content-Type", "")
+                if "pdf" not in content_type.lower():
+                    print(f"Warning: pdf{result_index} might not be a valid PDF (Content-Type: {content_type})")
+                else:
+                    pdf_file_obj = io.BytesIO(response.content)  # Save file in memory
+                    filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
+                    if filter_result[0]:
+                        writer = FileWriter.FileWriter()
+                        writer.write_file("Files\\pdf" + str(result_index) + ".pdf", response.content, 'wb')
+                        writer.write_file("Files\\title" + str(result_index) + ".txt",
+                                          filter_result[1], 'w')
+                        writer.write_file("Files\\keywords" + str(result_index) + ".txt",
+                                          filter_result[2], 'w')
+                        writer.write_file("Files\\author" + str(result_index) + ".txt",
+                                          filter_result[3], 'w')
+                        writer.write_file("Files\\modDate" + str(result_index) + ".txt",
+                                          filter_result[4], 'w')
+                        print(f"Saved PDF directly from index {result_index}.")
                 continue
 
             soup = BeautifulSoup(response.text, 'html.parser')  # Use BeautifulSoup to parse the returned results
