@@ -1,4 +1,5 @@
 import json
+import requests
 
 import FileFilterer
 import FileWriter
@@ -13,10 +14,10 @@ if __name__ == '__main__':
     # FileWriter.FileWriter().write_file(path, content, 'w')
     # FileWriter.FileWriter().remove_file(path)
 
-    q = "Bovine colostrum for human consumption"
+    query = "Bovine colostrum for human consumption"
     # results = ResultGatherer.ResultGatherer().scrape_results(q, 20)
     # json.dump(results, open("Files\\results.txt", "w"))
     # results = json.load(open("Files\\results.txt"))
-    # FileGatherer.FileGatherer().gather_files(results, q)
+    # FileGatherer.FileGatherer().gather_files(results[0], query)
 
 

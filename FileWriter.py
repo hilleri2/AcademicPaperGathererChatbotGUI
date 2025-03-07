@@ -11,7 +11,6 @@ class FileWriter:
         try:
             os.mkdir(parent)
         except FileExistsError:
-            print(f"Directory '{parent}' already exists.")
             pass
         except PermissionError:
             print(f"Can not create directory '{parent}' due to permission error.")
