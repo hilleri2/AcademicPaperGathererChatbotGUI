@@ -78,46 +78,60 @@ class ResultGatherer:
         for element in soup_object.select(".gs_r"):
             if index > page_max:
                 break
-            # For each result, get: title, URL, authors, Google Scholar identifier, and excerpt of the abstract
+            # Get title, URL, direct file URL, authors, Google Scholar identifier, and abstract excerpt for each result
             # Each correlate to specific, nested elements on the page
+            title = element.select_one(".gs_rt")
+            link = element.select_one(".gs_rt a")
+            file_link = element.select_one('.gs_or_ggsm a')
+            authors = element.select_one(".gs_a")
+            scholar_id = element.select_one(".gs_rt a")
+            snippet = element.select_one(".gs_rs")
+            # Then append them to a dictionary
             scholar_results.append({
-                "title": element.select(".gs_rt")[0].text,
-                "link": element.select(".gs_rt a")[0]["href"],
-                "authors": element.select(".gs_a")[0].text.split('\xa0')[0],
-                "scholar_id": element.select(".gs_rt a")[0]["id"],
-                "snippet": element.select(".gs_rs")[0].text.replace("\n", "")
+                "title": title.text if title else "No title",
+                "link": link["href"] if link else "No result link",
+                "file_link": file_link["href"] if file_link else "No file link",
+                "authors": authors.text.split('\xa0') if authors else "No authors",
+                "scholar_id": scholar_id["id"] if scholar_id else "No ID",
+                "snippet": snippet.text.replace("\n", "") if snippet else "No snippet"
+                # "title": element.select_one(".gs_rt").text,
+                # "link": element.select_one(".gs_rt a")["href"],
+                # "file_link": element.select_one('.gs_or_ggsm a')["href"],
+                # "authors": element.select_one(".gs_a").text.split('\xa0'),
+                # "scholar_id": element.select_one(".gs_rt a")["id"],
+                # "snippet": element.select_one(".gs_rs").text.replace("\n", "")
             })
             index += 1
         return scholar_results
 
     # Craft a URL for the desired query, specifying the starting result and number to grab
     # This allows for an iterative approach to result gathering
-        # @param q : The Google Scholar search query
+        # @param query : The Google Scholar search query
         # @param start : The starting index for results on the page
         # @param num : The number of results to include on this page
         # @param language : The language to use for the page - default is english
-    def __build_url(self, q, start, num, language="en"):
+    def __build_url(self, query, start, num, language="en"):
         base = "https://scholar.google.com/scholar?"
-        q = q.replace(" ", "+")
-        return f"{base}hl={language}&num={num}&start={start}&q={q}"
+        query = query.replace(" ", "+")
+        return f"{base}hl={language}&num={num}&start={start}&q={query}"
 
     # Iteratively gather a set number of results for the desired query
-        # @param q : The Google Scholar search query
+        # @param query : The Google Scholar search query
         # @param total_results : The total number of results to gather
         # @param num : The number of results on each page - default is 10
-    def scrape_results(self, q, total_results, num=10):
+    def scrape_results(self, query, total_results, num=10):
         scholar_results = []
         start = 0
         while start < total_results:
             print(f"\rGetting results {start}-{start+num-1}", end="")
-            url = self.__build_url(q, start, num)
+            url = self.__build_url(query, start, num)
             session = requests.Session()
             headers_to_use = random.choice(self.ordered_headers_list)
             session.headers = headers_to_use
             response = session.get(url)
             soup = BeautifulSoup(response.text, "html.parser")
             page_results = self.__get_results_from_page(soup, num)
-            scholar_results.append(page_results)
+            scholar_results.extend(page_results)
             start += num
             # Google Scholar has strict anti-bot policies, so scraping slowly is a must
             delay = random.uniform(3, 7)
