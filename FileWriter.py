@@ -24,12 +24,16 @@ class FileWriter:
         # @param path : The path to write the file to, including file name
         # @param content : The contents of the file
         # @param write_type : The writing mode to use for this file
-    def write_file(self, path, content, write_type):
+    def write_file(self, path, content, write_type, encoding=None):
         value = self.__check_path(path)
         if value == 0:
-            file = open(path, write_type)
+            if encoding:
+                file = open(path, write_type, encoding=encoding)
+            else:
+                file = open(path, write_type)
             file.write(content)
             file.close()
+
 
     # Remove a file, if it exists
         # @param path : The file's path
