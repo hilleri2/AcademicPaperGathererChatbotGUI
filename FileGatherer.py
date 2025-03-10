@@ -6,6 +6,7 @@ import io
 
 import FileFilterer
 import FileWriter
+import DuplicateFilter
 
 
 class FileGatherer:
@@ -14,7 +15,7 @@ class FileGatherer:
         # @param results : List of scraped results from Google Scholar
         # @param query : The Google Scholar search query
         # @param path_to_directory : The path to the directory where all files will be saved
-    def gather_files(self, results, query, path_to_directory):
+    def gather_files(self, results: list, query: str, path_to_directory: str):
         result_index = 1
         for result in results:  # Iterate over results
             # Sleep for 3 to 7 seconds to avoid angering any anti-bot policies
@@ -77,17 +78,20 @@ class FileGatherer:
         # @param filter_result : The returned filtering result
         # @result_index : The current numbering index
         # @path_to_directory : The path to the directory where files are to be saved
-    def handle_file_result(self, response, filter_result, result_index, path_to_directory):
+    def handle_file_result(self, response: requests.Response, filter_result: tuple, result_index: int,
+                           path_to_directory: str):
         if filter_result[0]:
-            writer = FileWriter.FileWriter()
-            file_path = f"{path_to_directory}\\Articles\\{result_index}.pdf"
-            writer.write_file(file_path, response.content, 'wb')
-            writer.write_file(f"{path_to_directory}\\Titles\\{result_index}.txt", filter_result[1], 'w')
-            writer.write_file(f"{path_to_directory}\\Keywords\\{result_index}.txt", filter_result[2], 'w')
-            writer.write_file(f"{path_to_directory}\\Authors\\{result_index}.txt", filter_result[3], 'w')
-            writer.write_file(f"{path_to_directory}\\ModDate\\{result_index}.txt", filter_result[4], 'w')
-            print(f"File '{file_path}' downloaded.")
-            result_index += 1
+            if DuplicateFilter.DuplicateFilter().add_paper(filter_result[1], filter_result[2],
+                                                           filter_result[3], filter_result[4]):
+                writer = FileWriter.FileWriter()
+                file_path = f"{path_to_directory}\\Articles\\{result_index}.pdf"
+                writer.write_file(file_path, response.content, 'wb')
+                writer.write_file(f"{path_to_directory}\\Titles\\{result_index}.txt", filter_result[1], 'w')
+                writer.write_file(f"{path_to_directory}\\Keywords\\{result_index}.txt", filter_result[2], 'w')
+                writer.write_file(f"{path_to_directory}\\Authors\\{result_index}.txt", filter_result[3], 'w')
+                writer.write_file(f"{path_to_directory}\\ModDate\\{result_index}.txt", filter_result[4], 'w')
+                print(f"File '{file_path}' downloaded.")
+                result_index += 1
         else:
             print(f"File filtered out.")
             if filter_result[1] is not None:
