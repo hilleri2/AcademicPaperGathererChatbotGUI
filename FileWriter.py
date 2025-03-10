@@ -7,17 +7,17 @@ class FileWriter:
         # @param path : The path to check, including the file name
     def __check_path(self, path):
         value = 0
-        parent = path.rsplit("\\")[0]
-        try:
-            os.mkdir(parent)
-        except FileExistsError:
-            pass
-        except PermissionError:
-            print(f"Can not create directory '{parent}' due to permission error.")
-            value = -1
-        except Exception as e:
-            print(f"Error encountered: {e}")
-            value = -1
+        parent = os.path.dirname(path)  # Get the parent directory path
+
+        if parent:  # If path is not just a filename, check parent path
+            try:
+                os.makedirs(parent, exist_ok=True)  # Create all parent directories if needed
+            except PermissionError:
+                print(f"Cannot create directory '{parent}' due to a permission error.")
+                value = -1
+            except Exception as e:
+                print(f"Error encountered: {e}")
+                value = -1
         return value
 
     # Write a file to a specified path, after verifying the path
