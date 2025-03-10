@@ -41,7 +41,6 @@ class FileFilterer:
     def filter(self, file, query):
         is_good_file = (False, None, None, None, None)
         try:
-            #pdf_file_obj = open(file, 'rb')
             pdf_reader = PyPDF2.PdfReader(file)
             meta = pdf_reader.metadata
         except Exception as e:
@@ -50,16 +49,13 @@ class FileFilterer:
             return is_good_file
         else:
             if meta is None:
-                print("File read as NoneType")
                 # Unknown file
+                print("File read as NoneType")
                 return is_good_file
-            # in_title = False
-            # in_keywords = False
-            # term = 'bovine colostrum'
             if '/Title' not in meta.keys() or '/Keywords' not in meta.keys() \
                     or '/Author' not in meta.keys() or '/ModDate' not in meta.keys():
-                print(f"Not enough data in PDF to know")
                 # Unknown file
+                print(f"Not enough data in PDF to know")
             else:
                 title = meta['/Title']
                 keywords = meta['/Keywords']
@@ -70,14 +66,3 @@ class FileFilterer:
                     is_good_file = (False, title, keywords, None, None)
             return is_good_file
 
-            #     if term in meta['/Title'].lower():
-            #         in_title = True
-            #     for keyword in meta['/Keywords']:
-            #         if term in keyword.lower():
-            #             in_keywords = True
-            #     if in_title or in_keywords:
-            #         print("Good file.")
-            #         is_good_file = True  # Must get here to return true
-            #     else:
-            #         print("Non-relevant paper.")
-            # return is_good_file
