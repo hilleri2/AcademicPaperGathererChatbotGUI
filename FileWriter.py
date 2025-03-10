@@ -5,7 +5,7 @@ class FileWriter:
 
     # CHeck if a path is valid and create any needed directories
         # @param path : The path to check, including the file name
-    def __check_path(self, path):
+    def __check_path(self, path: str):
         value = 0
         parent = os.path.dirname(path)  # Get the parent directory path
 
@@ -24,7 +24,7 @@ class FileWriter:
         # @param path : The path to write the file to, including file name
         # @param content : The contents of the file
         # @param write_type : The writing mode to use for this file
-    def write_file(self, path, content, write_type, encoding=None):
+    def write_file(self, path: str, content, write_type: str, encoding: str = None):
         value = self.__check_path(path)
         if value == 0:
             if encoding:
@@ -37,7 +37,7 @@ class FileWriter:
 
     # Remove a file, if it exists
         # @param path : The file's path
-    def remove_file(self, path):
+    def remove_file(self, path: str):
         if os.path.exists(path):
             os.remove(path)
         else:

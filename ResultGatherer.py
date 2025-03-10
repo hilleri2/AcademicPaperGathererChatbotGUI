@@ -72,7 +72,7 @@ class ResultGatherer:
     # Grab all available results on a specified page
         # @param soup_object : A BeautifulSoup response object
         # @param page_max : The maximum number of results on this page
-    def __get_results_from_page(self, soup_object, page_max):
+    def __get_results_from_page(self, soup_object: BeautifulSoup, page_max: int):
         scholar_results = []
         index = 1
         for element in soup_object.select(".gs_r"):
@@ -104,7 +104,7 @@ class ResultGatherer:
         # @param start : The starting index for results on the page
         # @param num : The number of results to include on this page
         # @param language : The language to use for the page - default is english
-    def __build_url(self, query, start, num, language="en"):
+    def __build_url(self, query: str, start: int, num: int, language: str = "en"):
         base = "https://scholar.google.com/scholar?"
         query = query.replace(" ", "+")
         return f"{base}hl={language}&num={num}&start={start}&q={query}"
@@ -113,7 +113,7 @@ class ResultGatherer:
         # @param query : The Google Scholar search query
         # @param total_results : The total number of results to gather
         # @param num : The number of results on each page - default is 10
-    def scrape_results(self, query, total_results, num=10):
+    def scrape_results(self, query: str, total_results: int, num: int = 10):
         scholar_results = []
         start = 0
         while start < total_results:

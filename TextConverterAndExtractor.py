@@ -8,7 +8,7 @@ class TextConverterAndExtractor:
 
     # Method that converts the PDF articles into simple plain text representations
         # @param path_to_directory : The path to the directory where all files will be saved
-    def convert_and_extract(self, path_to_directory):
+    def convert_and_extract(self, path_to_directory: str):
         path_list = Path(f"{path_to_directory}\\Articles\\").glob('**/*.pdf')
 
         for p in path_list:

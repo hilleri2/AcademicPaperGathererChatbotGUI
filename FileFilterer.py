@@ -1,3 +1,5 @@
+import io
+
 import PyPDF2
 from fuzzywuzzy import fuzz
 
@@ -8,7 +10,7 @@ class FileFilterer:
     # Useful for substring matching
         # @param query : The Google Scholar search query
         # @param title : The paper title
-    def jaccard_similarity(self, query, title):
+    def jaccard_similarity(self, query: str, title: str):
         set1, set2 = set(query), set(title)
         return len(set1 & set2) / len(set1 | set2)
 
@@ -17,7 +19,7 @@ class FileFilterer:
         # @param query : The Google Scholar search query
         # @param title : The paper title
         # @param keywords : The paper keywords
-    def fuzzy_partial(self, query, title, keywords):
+    def fuzzy_partial(self, query: str, title: str, keywords: list):
         title_score = fuzz.partial_ratio(query, title)
         keyword_score = max([fuzz.partial_ratio(query, kw) for kw in keywords], default=0)
         return max(title_score, keyword_score)
@@ -27,7 +29,7 @@ class FileFilterer:
         # @param query : The Google Scholar search query
         # @param title : The paper title
         # @param keywords : The paper keywords
-    def hybrid_match(self, query, title, keywords):
+    def hybrid_match(self, query: str, title: str, keywords: list):
         query = query.lower()
         title = title.lower()
         keywords = [kw.lower() for kw in keywords]
@@ -38,7 +40,7 @@ class FileFilterer:
     # Determines if a file is good and relevant to the query or not
         # @param file : The file to check
         # @param query : The Google Scholar search query
-    def filter(self, file, query):
+    def filter(self, file: io.BytesIO, query: str):
         is_good_file = (False, None, None, None, None)
         try:
             pdf_reader = PyPDF2.PdfReader(file)
