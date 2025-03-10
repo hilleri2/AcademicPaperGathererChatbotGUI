@@ -4,11 +4,11 @@ import pymupdf
 import FileWriter
 
 
-class PlainTextConverter:
+class TextConverterAndExtractor:
 
     # Method that converts the PDF articles into simple plain text representations
         # @param path_to_directory : The path to the directory where all files will be saved
-    def convert(self, path_to_directory):
+    def convert_and_extract(self, path_to_directory):
         path_list = Path(f"{path_to_directory}\\Articles\\").glob('**/*.pdf')
 
         for p in path_list:
@@ -23,6 +23,14 @@ class PlainTextConverter:
                 content += doc.load_page(_).get_text() + "\n"
             # Write the text as a file
             writer.write_file(f"{path_to_directory}\\Articles-Text\\{index}.txt", content, 'w', "utf-8")
+
+            # Extract bit of text between "Abstract" and "Introduction" to catch most abstracts
+            abstract_start = content.lower().find("abstract")
+            if abstract_start != -1:
+                abstract_end = content.lower().find("introduction", abstract_start)
+                abstract = content[abstract_start:abstract_end].strip() if abstract_end != -1 \
+                    else content[abstract_start:].strip()
+                writer.write_file(f"{path_to_directory}\\Abstracts\\{index}.txt", abstract, 'w', "utf-8")
 
             # Extract images
             image_list = []
