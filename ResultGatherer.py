@@ -89,17 +89,11 @@ class ResultGatherer:
             # Then append them to a dictionary
             scholar_results.append({
                 "title": title.text if title else "No title",
-                "link": link["href"] if link else "No result link",
-                "file_link": file_link["href"] if file_link else "No file link",
+                "link": link["href"] if link else None,
+                "file_link": file_link["href"] if file_link else None,
                 "authors": authors.text.split('\xa0') if authors else "No authors",
                 "scholar_id": scholar_id["id"] if scholar_id else "No ID",
                 "snippet": snippet.text.replace("\n", "") if snippet else "No snippet"
-                # "title": element.select_one(".gs_rt").text,
-                # "link": element.select_one(".gs_rt a")["href"],
-                # "file_link": element.select_one('.gs_or_ggsm a')["href"],
-                # "authors": element.select_one(".gs_a").text.split('\xa0'),
-                # "scholar_id": element.select_one(".gs_rt a")["id"],
-                # "snippet": element.select_one(".gs_rs").text.replace("\n", "")
             })
             index += 1
         return scholar_results
@@ -136,5 +130,5 @@ class ResultGatherer:
             # Google Scholar has strict anti-bot policies, so scraping slowly is a must
             delay = random.uniform(3, 7)
             time.sleep(delay)
-        print("\nScraping complete")
+        print(f"\rScraping complete for all {total_results} results")
         return scholar_results
