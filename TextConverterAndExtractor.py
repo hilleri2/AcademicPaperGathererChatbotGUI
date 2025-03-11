@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import pymupdf
 
@@ -9,7 +10,7 @@ class TextConverterAndExtractor:
     # Method that converts the PDF articles into simple plain text representations
         # @param path_to_directory : The path to the directory where all files will be saved
     def convert_and_extract(self, path_to_directory: str):
-        path_list = Path(f"{path_to_directory}\\Articles\\").glob('**/*.pdf')
+        path_list = Path(os.path.join(path_to_directory, "Articles")).glob("**/*.pdf")
 
         for p in path_list:
             writer = FileWriter.FileWriter()
@@ -22,7 +23,7 @@ class TextConverterAndExtractor:
             for _ in range(doc.page_count):
                 content += doc.load_page(_).get_text() + "\n"
             # Write the text as a file
-            writer.write_file(f"{path_to_directory}\\Articles-Text\\{index}.txt", content, 'w', "utf-8")
+            writer.write_file(os.path.join(path_to_directory, "Articles-Text", f"{index}.txt"), content, 'w', "utf-8")
 
             # Extract bit of text between "Abstract" and "Introduction" to catch most abstracts
             abstract_start = content.lower().find("abstract")
@@ -30,7 +31,7 @@ class TextConverterAndExtractor:
                 abstract_end = content.lower().find("introduction", abstract_start)
                 abstract = content[abstract_start:abstract_end].strip() if abstract_end != -1 \
                     else content[abstract_start:].strip()
-                writer.write_file(f"{path_to_directory}\\Abstracts\\{index}.txt", abstract, 'w', "utf-8")
+                writer.write_file(os.path.join(path_to_directory, "Abstracts", f"{index}.txt"), abstract, 'w', "utf-8")
 
             # Extract images
             image_list = []
@@ -42,13 +43,13 @@ class TextConverterAndExtractor:
                         continue
                     img = doc.extract_image(xref)
                 except Exception as e:
-                    print(f"Article: {index} - Encountered error with xref: {xref}\tError: ", e)
+                    print(f"\nArticle: {index} - Encountered error with xref: {xref}\tError: ", e)
                     continue
                 image_list.append((img['image'], img['ext'], i))
                 i += 1
             for image in image_list:
-                writer.write_file(
-                    f"{path_to_directory}\\Images\\{index}\\image{image[2]}.{image[1]}", image[0], 'wb')
+                writer.write_file(os.path.join(path_to_directory, "Images", index, f"image{image[2]}.{image[1]}"),
+                                  image[0], 'wb')
 
             # Close the file and move to next
             doc.close()

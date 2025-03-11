@@ -46,18 +46,19 @@ class FileFilterer:
             pdf_reader = PyPDF2.PdfReader(file)
             meta = pdf_reader.metadata
         except Exception as e:
-            print("File could not be opened.")
+            # print("File could not be opened.")
             # Bad file
             return is_good_file
         else:
             if meta is None:
                 # Unknown file
-                print("File read as NoneType")
+                # print("File read as NoneType")
                 return is_good_file
             if '/Title' not in meta.keys() or '/Keywords' not in meta.keys() \
                     or '/Author' not in meta.keys() or '/ModDate' not in meta.keys():
                 # Unknown file
-                print(f"Not enough data in PDF to know")
+                pass
+                # print(f"Not enough data in PDF to know")
             else:
                 title = meta['/Title']
                 keywords = meta['/Keywords']
