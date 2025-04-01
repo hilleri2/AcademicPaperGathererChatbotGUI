@@ -3,6 +3,7 @@ import hashlib
 
 class DuplicateFilter:
     hash_table = set()  # Static global variable to store hashes
+    duplicateCount = 0
 
     @staticmethod
     # Method that generates a unique hash from a paper's metadata
@@ -23,6 +24,7 @@ class DuplicateFilter:
         paper_hash = self.generate_paper_hash(title, keywords, authors, mod_date)
         if paper_hash in self.hash_table:
             # print("Duplicate paper encountered.")
+            self.duplicateCount += 1
             return False  # Duplicate found
         self.hash_table.add(paper_hash)
         return True  # Successfully added
