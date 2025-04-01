@@ -8,6 +8,7 @@ import io
 import FileFilterer
 import FileWriter
 import DuplicateFilter
+import Headers
 
 
 class FileGatherer:
@@ -15,18 +16,18 @@ class FileGatherer:
     # Method that attempts to fetch content from a URL and will retry if failed, with a longer delay each time
     # @param url : The URl to fetch from
     # @param max_tries : The maximum number of times to try a request
-    def fetch_with_retry(self, url, print_index, max_tries=1):
-        for attempt in range(max_tries):
-            try:
-                response = requests.get(url, timeout=10)
-                if response.status_code == 200:
-                    return response
-                elif response.status_code == 403:
-                    print(f"\rProcessing index {print_index}... Blocked on attempt {attempt + 1}, retrying...", end="")
-            except requests.exceptions.RequestException as e:
-                print(f"\rProcessing index {print_index}... Request failed on attempt {attempt + 1}: {e}", end="")
-
-            time.sleep(random.uniform(5, 15) * (attempt + 1))  # Exponential backoff
+    def fetch(self, url, print_index):
+        try:
+            session = requests.Session()
+            headers_to_use = Headers.Headers().get_rand_header()
+            session.headers = headers_to_use
+            response = session.get(url, timeout=10)
+            if response.status_code == 200:
+                return response
+            elif response.status_code == 403:
+                print(f"\rProcessing index {print_index}... Request blocked")
+        except requests.exceptions.RequestException as e:
+            print(f"\rProcessing index {print_index}... Request failed on attempt: {e}")
         return None
 
     # Gather files from each result, including ones that are referenced on each web page
@@ -51,15 +52,10 @@ class FileGatherer:
                 # No link for this index
                 print(f"\nNo link for index {print_index}")
                 continue
-            response = self.fetch_with_retry(url, print_index)
+            response = self.fetch(url, print_index)
             if not response:
                 print(f"\nFailed to fetch {url}")
                 continue
-            # try:
-            #     response = requests.get(url)  # Use GET request on URL
-            # except Exception as e:
-            #     print("\nError on index " + str(print_index) + "\n\tException: ", e)
-            #     continue
 
             content_type = response.headers.get("Content-Type", "").lower()
             if "pdf" in content_type:
@@ -67,17 +63,6 @@ class FileGatherer:
                 filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
                 result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
                 continue
-            # if url[-3:] == "pdf":
-            #     content_type = response.headers.get("Content-Type", "")
-            #     if "pdf" not in content_type.lower():
-            #         print(f"\nWarning: pdf{print_index} might not be a valid PDF (Content-Type: {content_type})")
-            #     else:
-            #         pdf_file_obj = io.BytesIO(response.content)  # Save file in memory
-            #         filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
-            #         result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
-            #         # if filter_result[0]:
-            #         #     print(f"Saved PDF directly from index {result_index-1}.")
-            #     continue
 
             soup = BeautifulSoup(response.text, 'html.parser')  # Use BeautifulSoup to parse the returned results
             links = soup.find_all('a')  # Find all hyperlinks present on webpage
@@ -85,11 +70,11 @@ class FileGatherer:
 
             # Check all links for PDFs and grab the ones that are found
             #   this is the step that introduces problems, as some links report to be PDFs
-            #   but are not or are just empty -- handled in post-processing
+            #   but are not or are just empty -- handled by checking response type
             for link in links:
                 file_url = link.get('href')
                 if file_url and file_url.lower().endswith(".pdf"):
-                    response = self.fetch_with_retry(file_url, print_index)
+                    response = self.fetch(file_url, print_index)
                     if not response:
                         continue
 
@@ -101,23 +86,6 @@ class FileGatherer:
                     pdf_file_obj = io.BytesIO(response.content)
                     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
                     result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
-                # if ('.pdf' in link.get('href', [])):
-                #     # i += 1
-                #     # print(f"Checking file {i} from current index...")
-                #
-                #     # Try to get a response object for this link -- sometimes fails due to broken links or 403 errors
-                #     try:
-                #         response = requests.get(link.get('href'))
-                #     except Exception as e:
-                #         print("\nUnable to download results from index " + str(print_index))
-                #         print("\tException: ", e)
-                #         continue
-                #
-                #     pdf_file_obj = io.BytesIO(response.content)  # Save file in memory
-                #     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
-                #     result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
-            # if i == 0:
-            #     print("No files from index " + str(result_index))
         print("\nAll results scraped.")
 
     # Checks returned file result from filtering and saves the appropriate data
