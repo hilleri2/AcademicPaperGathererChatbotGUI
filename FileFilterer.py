@@ -11,8 +11,8 @@ class FileFilterer:
         # @param query : The Google Scholar search query
         # @param title : The paper title
     def jaccard_similarity(self, query: str, title: str):
-        set1, set2 = set(query), set(title)
-        return len(set1 & set2) / len(set1 | set2)
+        set1, set2 = set(query.lower().split()), set(title.lower().split())
+        return len(set1 & set2) / len(set1 | set2) if set1 | set2 else 0
 
     # Determines the Fuzzy Partial Matching score for a query and a paper's title and keywords
     # Useful for word order integrity and typo handling
@@ -54,17 +54,25 @@ class FileFilterer:
                 # Unknown file
                 # print("File read as NoneType")
                 return is_good_file
-            if '/Title' not in meta.keys() or '/Keywords' not in meta.keys() \
-                    or '/Author' not in meta.keys() or '/ModDate' not in meta.keys():
+            if '/Title' not in meta.keys() or '/Author' not in meta.keys() or '/ModDate' not in meta.keys():
                 # Unknown file
                 pass
                 # print(f"Not enough data in PDF to know")
             else:
                 title = meta['/Title']
-                keywords = meta['/Keywords']
+                if '/Keywords' not in meta.keys():
+                    keywords = [""]
+                else:
+                    keywords = meta['/Keywords']
+                    if not isinstance(keywords, list):
+                        keywords = [keywords]  # Convert to list, if not already
                 score = self.hybrid_match(query, title, keywords)
-                if score >= 60:
-                    is_good_file = (True, title, keywords, meta['/Author'], meta['/ModDate'])
+                keywords = str(keywords)  # Convert list to string for printing ease later
+                # Dynamically set threshold dependent on query length, i.e. short and long queries have lower threshold
+                threshold = 50 if (len(query.split()) <= 3 or len(query.split()) >= 7) else 60
+                if score >= threshold:
+                    modDate = meta['/ModDate'][6:8] + '-' + meta['/ModDate'][2:6]
+                    is_good_file = (True, title, keywords, meta['/Author'], modDate)
                 else:  # TEST CODE
                     is_good_file = (False, title, keywords, None, None)
             return is_good_file
