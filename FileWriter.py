@@ -27,12 +27,15 @@ class FileWriter:
     def write_file(self, path: str, content, write_type: str, encoding: str = None):
         value = self.__check_path(path)
         if value == 0:
-            if encoding:
-                file = open(path, write_type, encoding=encoding)
-            else:
-                file = open(path, write_type)
-            file.write(content)
-            file.close()
+            try:
+                if encoding:
+                    file = open(path, write_type, encoding=encoding)
+                else:
+                    file = open(path, write_type)
+                file.write(content)
+                file.close()
+            except Exception as e:
+                print("Encountered unexpected error when attempting to write to file: ", e)
 
 
     # Remove a file, if it exists
