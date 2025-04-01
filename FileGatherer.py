@@ -12,6 +12,23 @@ import DuplicateFilter
 
 class FileGatherer:
 
+    # Method that attempts to fetch content from a URL and will retry if failed, with a longer delay each time
+    # @param url : The URl to fetch from
+    # @param max_tries : The maximum number of times to try a request
+    def fetch_with_retry(self, url, print_index, max_tries=1):
+        for attempt in range(max_tries):
+            try:
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    return response
+                elif response.status_code == 403:
+                    print(f"\rProcessing index {print_index}... Blocked on attempt {attempt + 1}, retrying...", end="")
+            except requests.exceptions.RequestException as e:
+                print(f"\rProcessing index {print_index}... Request failed on attempt {attempt + 1}: {e}", end="")
+
+            time.sleep(random.uniform(5, 15) * (attempt + 1))  # Exponential backoff
+        return None
+
     # Gather files from each result, including ones that are referenced on each web page
         # @param results : List of scraped results from Google Scholar
         # @param query : The Google Scholar search query
@@ -34,22 +51,33 @@ class FileGatherer:
                 # No link for this index
                 print(f"\nNo link for index {print_index}")
                 continue
-            try:
-                response = requests.get(url)  # Use GET request on URL
-            except Exception as e:
-                print("\nError on index " + str(print_index) + "\n\tException: ", e)
+            response = self.fetch_with_retry(url, print_index)
+            if not response:
+                print(f"\nFailed to fetch {url}")
                 continue
-            if url[-3:] == "pdf":
-                content_type = response.headers.get("Content-Type", "")
-                if "pdf" not in content_type.lower():
-                    print(f"\nWarning: pdf{print_index} might not be a valid PDF (Content-Type: {content_type})")
-                else:
-                    pdf_file_obj = io.BytesIO(response.content)  # Save file in memory
-                    filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
-                    result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
-                    # if filter_result[0]:
-                    #     print(f"Saved PDF directly from index {result_index-1}.")
+            # try:
+            #     response = requests.get(url)  # Use GET request on URL
+            # except Exception as e:
+            #     print("\nError on index " + str(print_index) + "\n\tException: ", e)
+            #     continue
+
+            content_type = response.headers.get("Content-Type", "").lower()
+            if "pdf" in content_type:
+                pdf_file_obj = io.BytesIO(response.content)
+                filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
+                result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
                 continue
+            # if url[-3:] == "pdf":
+            #     content_type = response.headers.get("Content-Type", "")
+            #     if "pdf" not in content_type.lower():
+            #         print(f"\nWarning: pdf{print_index} might not be a valid PDF (Content-Type: {content_type})")
+            #     else:
+            #         pdf_file_obj = io.BytesIO(response.content)  # Save file in memory
+            #         filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
+            #         result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
+            #         # if filter_result[0]:
+            #         #     print(f"Saved PDF directly from index {result_index-1}.")
+            #     continue
 
             soup = BeautifulSoup(response.text, 'html.parser')  # Use BeautifulSoup to parse the returned results
             links = soup.find_all('a')  # Find all hyperlinks present on webpage
@@ -59,21 +87,35 @@ class FileGatherer:
             #   this is the step that introduces problems, as some links report to be PDFs
             #   but are not or are just empty -- handled in post-processing
             for link in links:
-                if ('.pdf' in link.get('href', [])):
-                    # i += 1
-                    # print(f"Checking file {i} from current index...")
-
-                    # Try to get a response object for this link -- sometimes fails due to broken links or 403 errors
-                    try:
-                        response = requests.get(link.get('href'))
-                    except Exception as e:
-                        print("\nUnable to download results from index " + str(print_index))
-                        print("\tException: ", e)
+                file_url = link.get('href')
+                if file_url and file_url.lower().endswith(".pdf"):
+                    response = self.fetch_with_retry(file_url, print_index)
+                    if not response:
                         continue
 
-                    pdf_file_obj = io.BytesIO(response.content)  # Save file in memory
+                    content_type = response.headers.get("Content-Type", "").lower()
+                    if "pdf" not in content_type:
+                        print(f"\nSkipping {file_url} (not a valid PDF)")
+                        continue
+
+                    pdf_file_obj = io.BytesIO(response.content)
                     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
                     result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
+                # if ('.pdf' in link.get('href', [])):
+                #     # i += 1
+                #     # print(f"Checking file {i} from current index...")
+                #
+                #     # Try to get a response object for this link -- sometimes fails due to broken links or 403 errors
+                #     try:
+                #         response = requests.get(link.get('href'))
+                #     except Exception as e:
+                #         print("\nUnable to download results from index " + str(print_index))
+                #         print("\tException: ", e)
+                #         continue
+                #
+                #     pdf_file_obj = io.BytesIO(response.content)  # Save file in memory
+                #     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
+                #     result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
             # if i == 0:
             #     print("No files from index " + str(result_index))
         print("\nAll results scraped.")
