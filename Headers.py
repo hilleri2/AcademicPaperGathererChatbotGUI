@@ -55,6 +55,58 @@ class Headers:
             "Accept-Language": "en-US,en;q=0.9"
         }
     ]
+    modern_headers_list = [
+        {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://www.google.com/",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-User": "?1",
+            "Sec-Fetch-Dest": "document"
+        },
+        {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://duckduckgo.com/",
+            "Connection": "keep-alive",
+            "Sec-Fetch-Site": "cross-site",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-User": "?1",
+            "Sec-Fetch-Dest": "document"
+        },
+        {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": "https://www.bing.com/",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1"
+        },
+        {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13.4; rv:122.0) Gecko/20100101 Firefox/122.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": "https://www.google.com/",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1"
+        },
+        {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edg/122.0.0.0 Chrome/122.0.6261.95 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://www.yahoo.com/",
+            "Connection": "keep-alive",
+            "Sec-Fetch-Site": "cross-site",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-User": "?1",
+            "Sec-Fetch-Dest": "document"
+        }
+    ]
     # Create ordered dict from headers_list to allow for random selection
     ordered_headers_list = []
     for headers in headers_list:
@@ -63,6 +115,18 @@ class Headers:
             h[header] = value
         ordered_headers_list.append(h)
 
+    # Create ordered dict from modern_headers_list to allow for random selection
+    modern_ordered_headers_list = []
+    for headers in modern_headers_list:
+        h = OrderedDict()
+        for header, value in headers.items():
+            h[header] = value
+        modern_ordered_headers_list.append(h)
+
     # Get a random header from the list of headers
     def get_rand_header(self):
         return random.choice(self.ordered_headers_list)
+        
+    # Get a random header from the list of modern headers
+    def get_rand_header_modern(self):
+        return random.choice(self.modern_ordered_headers_list)

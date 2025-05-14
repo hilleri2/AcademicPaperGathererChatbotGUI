@@ -17,17 +17,18 @@ class FileGatherer:
     # @param url : The URl to fetch from
     # @param max_tries : The maximum number of times to try a request
     def fetch(self, url, print_index):
-        try:
-            session = requests.Session()
-            headers_to_use = Headers.Headers().get_rand_header()
-            session.headers = headers_to_use
-            response = session.get(url, timeout=10)
-            if response.status_code == 200:
-                return response
-            elif response.status_code == 403:
-                print(f"\rProcessing index {print_index}... Request blocked")
-        except requests.exceptions.RequestException as e:
-            print(f"\rProcessing index {print_index}... Request failed on attempt: {e}")
+        for _ in range(2):
+            try:
+                headers_to_use = Headers.Headers().get_rand_header_modern()
+                response = requests.get(url, headers=headers_to_use, timeout=10)
+                if response.status_code == 200:
+                    return response
+                elif response.status_code == 403:
+                    print(f"\rProcessing index {print_index}... Request blocked")
+            except requests.exceptions.RequestException as e:
+                print(f"\rProcessing index {print_index}... Request failed on attempt: {e}")
+                delay = random.uniform(2, 5)
+                time.sleep(delay)
         return None
 
     # Gather files from each result, including ones that are referenced on each web page

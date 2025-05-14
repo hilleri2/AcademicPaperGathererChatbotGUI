@@ -13,14 +13,14 @@ import DuplicateFilter
 if __name__ == '__main__':
     # query = "Bovine colostrum for human consumption"
     # path_to_directory = "BovineCol"
-    query = "empirical software engineering"
-    path_to_directory = "EmpiricalSoftware"
+    # query = "empirical software engineering"
+    # path_to_directory = "EmpiricalSoftware"
     # query = "large language models"
     # path_to_directory = "LLM"
     # query = "whey protein unfolding compound binding OR coacervation"
     # path_to_directory = "wheyProtein"
-    # query = "Ceramic microfiltration MF WPI purification"
-    # path_to_directory = "ceramicMicro"
+    query = "Ceramic microfiltration MF WPI purification"
+    path_to_directory = "ceramicMicro"
     # start = time.perf_counter()
     # results = ResultGatherer.ResultGatherer().scrape_results(query, 100)
     # end = time.perf_counter()

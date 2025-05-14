@@ -11,7 +11,7 @@ class FileFilterer:
         # @param query : The Google Scholar search query
         # @param title : The paper title
     def jaccard_similarity(self, query: str, title: str):
-        set1, set2 = set(query.lower().split()), set(title.lower().split())
+        set1, set2 = set(query.lower()), set(title.lower())
         return len(set1 & set2) / len(set1 | set2) if set1 | set2 else 0
 
     # Determines the Fuzzy Partial Matching score for a query and a paper's title and keywords
@@ -68,8 +68,7 @@ class FileFilterer:
                         keywords = [keywords]  # Convert to list, if not already
                 score = self.hybrid_match(query, title, keywords)
                 keywords = str(keywords)  # Convert list to string for printing ease later
-                # Dynamically set threshold dependent on query length, i.e. short and long queries have lower threshold
-                threshold = 50 if (len(query.split()) <= 3 or len(query.split()) >= 7) else 60
+                threshold = 60
                 if score >= threshold:
                     modDate = meta['/ModDate'][6:8] + '-' + meta['/ModDate'][2:6]
                     is_good_file = (True, title, keywords, meta['/Author'], modDate)
