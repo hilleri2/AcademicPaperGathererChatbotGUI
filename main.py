@@ -11,16 +11,17 @@ import DuplicateFilter
 
 
 if __name__ == '__main__':
-    # query = "Bovine colostrum for human consumption"
-    # path_to_directory = "BovineCol"
+    query = "Bovine colostrum for human consumption"
+    path_to_directory = "BovineCol"
     # query = "empirical software engineering"
     # path_to_directory = "EmpiricalSoftware"
     # query = "large language models"
     # path_to_directory = "LLM"
     # query = "whey protein unfolding compound binding OR coacervation"
     # path_to_directory = "wheyProtein"
-    query = "Ceramic microfiltration MF WPI purification"
-    path_to_directory = "ceramicMicro"
+    # query = "Ceramic microfiltration MF WPI purification"
+    # path_to_directory = "ceramicMicro"
+    meta_can_be_missing = True
     # start = time.perf_counter()
     # results = ResultGatherer.ResultGatherer().scrape_results(query, 100)
     # end = time.perf_counter()
@@ -29,7 +30,7 @@ if __name__ == '__main__':
     # json.dump(results, open(os.path.join(path_to_directory, "results.txt"), 'w'))
     results = json.load(open(os.path.join(path_to_directory, "results.txt")))
     # start = time.perf_counter()
-    FileGatherer.FileGatherer().gather_files(results, query, path_to_directory)
+    FileGatherer.FileGatherer().gather_files(results, query, path_to_directory, meta_can_be_missing)
     print(f"Duplicates papers found: {DuplicateFilter.DuplicateFilter().duplicateCount}")
     # end = time.perf_counter()
     # file_time = end - start

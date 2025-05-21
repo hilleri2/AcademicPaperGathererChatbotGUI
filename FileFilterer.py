@@ -1,6 +1,7 @@
 import io
 
 import PyPDF2
+from PyPDF2.generic import NameObject, TextStringObject
 from fuzzywuzzy import fuzz
 
 
@@ -40,7 +41,8 @@ class FileFilterer:
     # Determines if a file is good and relevant to the query or not
         # @param file : The file to check
         # @param query : The Google Scholar search query
-    def filter(self, file: io.BytesIO, query: str):
+        # @param meta_can_be_missing : Boolean toggle that determines if absent title and author is acceptable
+    def filter(self, file: io.BytesIO, query: str, meta_can_be_missing: bool):
         is_good_file = (False, None, None, None, None)
         try:
             pdf_reader = PyPDF2.PdfReader(file)
@@ -54,10 +56,16 @@ class FileFilterer:
                 # Unknown file
                 # print("File read as NoneType")
                 return is_good_file
+            # Check if title and author are allowed to be missing
+            if meta_can_be_missing:
+                # Add them if they are not present
+                if '/Title' not in meta.keys():
+                    meta[NameObject('/Title')] = TextStringObject("Unknown")
+                if '/Author' not in meta.keys():
+                    meta[NameObject('/Author')] = TextStringObject("Unknown")
             if '/Title' not in meta.keys() or '/Author' not in meta.keys() or '/ModDate' not in meta.keys():
                 # Unknown file
                 pass
-                # print(f"Not enough data in PDF to know")
             else:
                 title = meta['/Title']
                 if '/Keywords' not in meta.keys():
