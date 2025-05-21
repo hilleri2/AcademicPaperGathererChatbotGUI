@@ -25,6 +25,7 @@ class ResultGatherer:
             authors = element.select_one(".gs_a")
             scholar_id = element.select_one(".gs_rt a")
             snippet = element.select_one(".gs_rs")
+
             # Then append them to a dictionary
             scholar_results.append({
                 "title": title.text if title else "No title",
