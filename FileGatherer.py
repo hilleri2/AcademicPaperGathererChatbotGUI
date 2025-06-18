@@ -100,13 +100,15 @@ class FileGatherer:
 
         print("\nAll results scraped.")
 
-
     # Gather files from each result, including ones that are referenced on each web page
         # @param results : List of scraped results from Google Scholar
         # @param query : The Google Scholar search query
         # @param path_to_directory : The path to the directory where all files will be saved
         # @param meta_can_be_missing : Boolean toggle that determines if absent title and author is acceptable
-    def gather_files(self, results: list, query: str, path_to_directory: str, meta_can_be_missing: bool):
+        # @param year_start : The starting year of a date range - use None if no filtering is desired
+        # @param year_end : The ending year of a date range - use None if no filtering is desired
+    def gather_files(self, results: list, query: str, path_to_directory: str,
+                     meta_can_be_missing: bool, year_start: int, year_end: int):
         result_index = 1
         print_index = 0
         for result in results:  # Iterate over results
@@ -165,11 +167,16 @@ class FileGatherer:
         # @param filter_result : The returned filtering result
         # @result_index : The current numbering index
         # @path_to_directory : The path to the directory where files are to be saved
+        # @param year_start : The starting year of a date range - use None if no filtering is desired
+        # @param year_end : The ending year of a date range - use None if no filtering is desired
     def handle_file_result(self, response: requests.Response, filter_result: tuple, result_index: int,
-                           path_to_directory: str):
+                           path_to_directory: str, year_start: int, year_end: int):
+        year_is_good = True
+        if year_start is not None and year_end is not None:
+            year_is_good = self.check_paper_year(year_start, year_end, filter_result[4])
         if filter_result[0]:
             if DuplicateFilter.DuplicateFilter().add_paper(filter_result[1], filter_result[2],
-                                                           filter_result[3], filter_result[4]):
+                                                           filter_result[3], filter_result[4]) and year_is_good:
                 writer = FileWriter.FileWriter()
                 file_path = os.path.join(path_to_directory, "Articles", f"{result_index}.pdf")
                 writer.write_file(file_path, response.content, 'wb')
@@ -195,4 +202,6 @@ class FileGatherer:
                 result_index += 1
         return result_index
 
-
+    def check_paper_year(self, year_start, year_end, mod_date):
+        year = int(mod_date[3:])
+        return year_start <= year <= year_end

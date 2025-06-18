@@ -43,22 +43,28 @@ class ResultGatherer:
         # @param query : The Google Scholar search query
         # @param start : The starting index for results on the page
         # @param num : The number of results to include on this page
+        # @param year_start : The starting year of a date range - use None if no filtering is desired
+        # @param year_end : The ending year of a date range - use None if no filtering is desired
         # @param language : The language to use for the page - default is english
-    def __build_url(self, query: str, start: int, num: int, language: str = "en"):
+    def __build_url(self, query: str, start: int, num: int, year_start: int, year_end: int, language: str = "en"):
         base = "https://scholar.google.com/scholar?"
         query = query.replace(" ", "+")
-        return f"{base}hl={language}&num={num}&start={start}&q={query}"
+        if year_start is None or year_end is None:
+            return f"{base}hl={language}&num={num}&start={start}&q={query}"
+        return f"{base}hl={language}&num={num}&start={start}&q={query}&as_ylo={year_start}&as_yhi={year_end}"
 
     # Iteratively gather a set number of results for the desired query
         # @param query : The Google Scholar search query
         # @param total_results : The total number of results to gather
+        # @param year_start : The starting year of a date range - use None if no filtering is desired
+        # @param year_end : The ending year of a date range - use None if no filtering is desired
         # @param num : The number of results on each page - default is 10
-    def scrape_results(self, query: str, total_results: int, num: int = 10):
+    def scrape_results(self, query: str, total_results: int, year_start: int, year_end: int, num: int = 10):
         scholar_results = []
         start = 0
         while start < total_results:
             print(f"\rGetting results {start}-{start+num-1}", end="")
-            url = self.__build_url(query, start, num)
+            url = self.__build_url(query, start, num, year_start, year_end)
             session = requests.Session()
             headers_to_use = Headers.Headers().get_rand_header()
             session.headers = headers_to_use
