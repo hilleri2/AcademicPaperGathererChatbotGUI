@@ -1,0 +1,15 @@
+bs4
+collections
+fuzzywuzzy
+hashlib
+io
+json
+os
+pathlib
+pymupdf
+PyPDF2
+random
+requests
+selenium
+time
+webdriver_manager
