@@ -4,13 +4,11 @@ from bs4 import BeautifulSoup
 import random
 import time
 import io
-from urllib.parse import urljoin
 
 import FileFilterer
 import FileWriter
 import DuplicateFilter
 import Headers
-import HeadlessBrowser
 
 
 class FileGatherer:
@@ -34,72 +32,6 @@ class FileGatherer:
                 time.sleep(delay)
         return None
 
-    def gather_files_headless(self, results: list, query: str, path_to_directory: str):
-        result_index = 1
-        print_index = 0
-        browser = HeadlessBrowser.HeadlessBrowser()
-
-        for result in results:
-            print_index += 1
-            print(f"\rProcessing index {print_index}...", end="")
-            time.sleep(random.uniform(3, 7))
-
-            url = result.get('file_link') or result.get('link')
-            if not url:
-                print(f"\nNo link for index {print_index}")
-                continue
-
-            try:
-                html = browser.fetch_page_headless(url)
-            except Exception as e:
-                print(f"\nFailed to fetch page {url} due to: {e}")
-                continue
-
-            soup = BeautifulSoup(html, 'html.parser')
-
-            # Heuristic: check for direct PDF download
-            if url.lower().endswith(".pdf"):
-                try:
-                    response = requests.get(url)
-                    content_type = response.headers.get("Content-Type", "").lower()
-                    if "pdf" in content_type:
-                        pdf_file_obj = io.BytesIO(response.content)
-                        filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
-                        result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
-                        continue
-                except Exception as e:
-                    print(f"\nFailed to download PDF from {url}: {e}")
-                    continue
-
-            # Otherwise, find all <a href="...pdf">
-            links = soup.find_all('a')
-            for link in links:
-                file_url = link.get('href')
-                if not file_url or not file_url.lower().endswith(".pdf"):
-                    continue
-
-                if file_url.startswith('/'):
-                    # handle relative URLs
-                    print("\n\tFound relative URL.")
-                    file_url = urljoin(url, file_url)
-
-                try:
-                    response = requests.get(file_url)
-                    content_type = response.headers.get("Content-Type", "").lower()
-                    if "pdf" not in content_type:
-                        print(f"\nSkipping {file_url} (not a valid PDF)")
-                        continue
-
-                    pdf_file_obj = io.BytesIO(response.content)
-                    filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query)
-                    result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
-
-                except Exception as e:
-                    print(f"\nFailed to download or process PDF from {file_url}: {e}")
-                    continue
-
-        print("\nAll results scraped.")
-
     # Gather files from each result, including ones that are referenced on each web page
         # @param results : List of scraped results from Google Scholar
         # @param query : The Google Scholar search query
@@ -108,7 +40,7 @@ class FileGatherer:
         # @param year_start : The starting year of a date range - use None if no filtering is desired
         # @param year_end : The ending year of a date range - use None if no filtering is desired
     def gather_files(self, results: list, query: str, path_to_directory: str,
-                     meta_can_be_missing: bool, year_start: int, year_end: int):
+                     meta_can_be_missing: bool, year_start: int or None, year_end: int or None):
         result_index = 1
         print_index = 0
         for result in results:  # Iterate over results
@@ -135,12 +67,12 @@ class FileGatherer:
             if "pdf" in content_type:
                 pdf_file_obj = io.BytesIO(response.content)
                 filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query, meta_can_be_missing)
-                result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
+                result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory,
+                                                       year_start, year_end)
                 continue
 
             soup = BeautifulSoup(response.text, 'html.parser')  # Use BeautifulSoup to parse the returned results
             links = soup.find_all('a')  # Find all hyperlinks present on webpage
-            i = 0  # Used for numbering the PDFs
 
             # Check all links for PDFs and grab the ones that are found
             #   this is the step that introduces problems, as some links report to be PDFs
@@ -159,7 +91,8 @@ class FileGatherer:
 
                     pdf_file_obj = io.BytesIO(response.content)
                     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query, meta_can_be_missing)
-                    result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory)
+                    result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory,
+                                                           year_start, year_end)
         print("\nAll results scraped.")
 
     # Checks returned file result from filtering and saves the appropriate data
@@ -170,7 +103,7 @@ class FileGatherer:
         # @param year_start : The starting year of a date range - use None if no filtering is desired
         # @param year_end : The ending year of a date range - use None if no filtering is desired
     def handle_file_result(self, response: requests.Response, filter_result: tuple, result_index: int,
-                           path_to_directory: str, year_start: int, year_end: int):
+                           path_to_directory: str, year_start: int or None, year_end: int or None):
         year_is_good = True
         if year_start is not None and year_end is not None:
             year_is_good = self.check_paper_year(year_start, year_end, filter_result[4])

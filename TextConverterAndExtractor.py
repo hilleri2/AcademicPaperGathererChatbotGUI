@@ -25,7 +25,7 @@ class TextConverterAndExtractor:
             # Write the text as a file
             writer.write_file(os.path.join(path_to_directory, "Articles-Text", f"{index}.txt"), content, 'w', "utf-8")
 
-            # Extract bit of text between "Abstract" and "Introduction" to catch most abstracts
+            # Extract text between "Abstract" and "Introduction" to catch most abstracts
             abstract_start = content.lower().find("abstract")
             if abstract_start != -1:
                 abstract_end = content.lower().find("introduction", abstract_start)
@@ -53,4 +53,3 @@ class TextConverterAndExtractor:
 
             # Close the file and move to next
             doc.close()
-

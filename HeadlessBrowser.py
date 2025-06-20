@@ -42,4 +42,3 @@ class HeadlessBrowser:
         finally:
             driver.quit()
             return content
-

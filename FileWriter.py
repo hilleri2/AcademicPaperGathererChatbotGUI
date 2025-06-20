@@ -37,7 +37,6 @@ class FileWriter:
             except Exception as e:
                 print("Encountered unexpected error when attempting to write to file: ", e)
 
-
     # Remove a file, if it exists
         # @param path : The file's path
     def remove_file(self, path: str):

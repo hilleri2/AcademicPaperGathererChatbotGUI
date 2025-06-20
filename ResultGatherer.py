@@ -59,7 +59,8 @@ class ResultGatherer:
         # @param year_start : The starting year of a date range - use None if no filtering is desired
         # @param year_end : The ending year of a date range - use None if no filtering is desired
         # @param num : The number of results on each page - default is 10
-    def scrape_results(self, query: str, total_results: int, year_start: int, year_end: int, num: int = 10):
+    def scrape_results(self, query: str, total_results: int, year_start: int or None, year_end: int or None,
+                       num: int = 10):
         scholar_results = []
         start = 0
         while start < total_results:

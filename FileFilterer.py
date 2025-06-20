@@ -83,4 +83,3 @@ class FileFilterer:
                 else:  # TEST CODE
                     is_good_file = (False, title, keywords, None, None)
             return is_good_file
-
