@@ -112,7 +112,9 @@ python cli.py convert --directory "ml_data"
 
 ## Known Limitations
 
-Many sites respond to automated requests with HTTP 403 errors, "Forbidden Access". The frequency of these errors varies greatly from one prompt to the next, but severely limits the number of papers that are gathered. This remains an active issue.
+Many sites respond to automated requests with HTTP 403 errors, "Forbidden Access". The frequency of these errors varies greatly from one prompt to the next, but severely limits the number of papers that are gathered. In an attempt to combat this, several methods were explored and tested (such as free proxies, headless browsers, and user behavior mimicking) with little success.
+
+This remains an active issue.
 
 ## Considerations
 
