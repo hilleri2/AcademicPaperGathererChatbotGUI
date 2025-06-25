@@ -64,7 +64,7 @@ class ResultGatherer:
         scholar_results = []
         start = 0
         while start < total_results:
-            print(f"\rGetting results {start}-{start+num-1}", end="")
+            print(f"\rGetting results {start}-{start+num-1}", end="", flush=True)
             url = self.__build_url(query, start, num, year_start, year_end)
             session = requests.Session()
             headers_to_use = Headers.Headers().get_rand_header()
@@ -77,5 +77,5 @@ class ResultGatherer:
             # Google Scholar has strict anti-bot policies, so scraping slowly is a must
             delay = random.uniform(3, 7)
             time.sleep(delay)
-        print(f"\rScraping complete for all {total_results} results")
+        print(f"\rScraping complete for all {total_results} results", flush=True)
         return scholar_results

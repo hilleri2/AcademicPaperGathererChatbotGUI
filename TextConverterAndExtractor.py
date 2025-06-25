@@ -43,7 +43,7 @@ class TextConverterAndExtractor:
                         continue
                     img = doc.extract_image(xref)
                 except Exception as e:
-                    print(f"\nArticle: {index} - Encountered error with xref: {xref}\tError: ", e)
+                    print(f"\nArticle: {index} - Encountered error with xref: {xref}\tError: ", e, flush=True)
                     continue
                 image_list.append((img['image'], img['ext'], i))
                 i += 1

@@ -13,10 +13,10 @@ class FileWriter:
             try:
                 os.makedirs(parent, exist_ok=True)  # Create all parent directories if needed
             except PermissionError:
-                print(f"Cannot create directory '{parent}' due to a permission error.")
+                print(f"\nCannot create directory '{parent}' due to a permission error.", flush=true)
                 value = -1
             except Exception as e:
-                print(f"Error encountered: {e}")
+                print(f"\nError encountered: {e}", flush=True)
                 value = -1
         return value
 
@@ -35,7 +35,7 @@ class FileWriter:
                 file.write(content)
                 file.close()
             except Exception as e:
-                print("Encountered unexpected error when attempting to write to file: ", e)
+                print("\nEncountered unexpected error when attempting to write to file: ", e, flush=True)
 
     # Remove a file, if it exists
         # @param path : The file's path
@@ -43,4 +43,4 @@ class FileWriter:
         if os.path.exists(path):
             os.remove(path)
         else:
-            print(f"Path '{path}' does not exist.")
+            print(f"\nPath '{path}' does not exist.", flush=True)

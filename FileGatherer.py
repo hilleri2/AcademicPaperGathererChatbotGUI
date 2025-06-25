@@ -12,6 +12,10 @@ import Headers
 
 
 class FileGatherer:
+    forbidden_count = 0
+    request_error_count = 0
+    fetch_failed_count = 0
+    file_skipped_count = 0
 
     # Method that attempts to fetch content from a URL and will retry if failed, with a longer delay each time
     # @param url : The URl to fetch from
@@ -25,9 +29,11 @@ class FileGatherer:
                 if response.status_code == 200:
                     return response
                 elif response.status_code == 403:
-                    print(f"\rProcessing files at index {print_index}... Request blocked")
+                    self.forbidden_count += 1
+                    # print(f"\rProcessing files at index {print_index}... Request blocked")
             except requests.exceptions.RequestException as e:
-                print(f"\rProcessing files at index {print_index}... Request failed on attempt: {e}")
+                self.request_error_count += 1
+                # print(f"\rProcessing files at index {print_index}... Request failed on attempt: {e}")
                 delay = random.uniform(2, 5)
                 time.sleep(delay)
         return None
@@ -45,7 +51,7 @@ class FileGatherer:
         print_index = 0
         for result in results:  # Iterate over results
             print_index += 1
-            print(f"\rProcessing files at index {print_index}...", end="")
+            print(f"\rProcessing files at index {print_index}...", end="", flush=True)
             # Sleep for 3 to 7 seconds to avoid angering any anti-bot policies
             delay = random.uniform(3, 7)
             time.sleep(delay)
@@ -60,7 +66,8 @@ class FileGatherer:
                 continue
             response = self.fetch(url, print_index)
             if not response:
-                print(f"\nFailed to fetch {url}")
+                self.fetch_failed_count += 1
+                # print(f"\nFailed to fetch {url}")
                 continue
 
             content_type = response.headers.get("Content-Type", "").lower()
@@ -86,14 +93,18 @@ class FileGatherer:
 
                     content_type = response.headers.get("Content-Type", "").lower()
                     if "pdf" not in content_type:
-                        print(f"\nSkipping {file_url} (not a valid PDF)")
+                        self.file_skipped_count += 1
+                        # print(f"\nSkipping {file_url} (not a valid PDF)")
                         continue
 
                     pdf_file_obj = io.BytesIO(response.content)
                     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query, meta_can_be_missing)
                     result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory,
                                                            year_start, year_end)
-        print("\nAll results scraped.")
+        print("\nAll results scraped."
+              f"\n\t403 errors: {self.forbidden_count}\n\tRequest Exceptions: {self.request_error_count}"
+              f"\n\tFiles Unable to Fetched: {self.fetch_failed_count}\n\tFiles Skipped: {self.file_skipped_count}",
+              flush=True)
 
     # Checks returned file result from filtering and saves the appropriate data
         # @param response : The GET response of the file
