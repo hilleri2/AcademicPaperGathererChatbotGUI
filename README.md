@@ -29,9 +29,86 @@ pip install -r requirements.txt
 
 ## Usage
 
-Edit main.py and change the prompt and path to your desired specifications. Call only the modules that are desired.
+This tool can run its full pipeline or individual modules using subcommands.
 
-Streamlined API support to come.
+**Note:** `main.py` can be edited and run, if desired. It has the same functionality as `cli.py`, but requires manual parameter setting. Not recommended for general use.
+
+### General Structure
+
+```bash
+python cli.py <command> [options]
+```
+
+### Subcommands
+
+#### `all` — Run the full pipeline
+
+```bash
+python cli.py all --query "search query" --directory "output directory" [options]
+```
+
+**Required:**
+- `--query` – search query used to gather results
+- `--directory` – directory to save files to
+
+**Optional:**
+- `--total_results` – number of results to gather (default: 100)
+- `--year_start` – start of year range (e.g., 2010)
+- `--year_end` – end of year range (e.g., 2024)
+- `--meta_can_be_missing` – allow files with missing metadata
+
+---
+
+#### `results` — Only gather search results
+
+```bash
+python cli.py results --query "search query" --directory "output directory" [options]
+```
+
+**Same options as `all`, except no file processing or conversion.**
+
+---
+
+#### `files` — Only gather files from an existing `results.txt` file
+
+```bash
+python cli.py files --query "search query" --directory "output directory" [options]
+```
+
+**Note:** Requires a `results.txt` file already present in the given directory.
+
+---
+
+#### `convert` — Only run text conversion and extraction
+
+```bash
+python cli.py convert --directory "output directory"
+```
+
+**Note:** Assumes files have already been gathered into the output directory.
+
+---
+
+### Examples
+
+Run everything:
+
+```bash
+python cli.py all --query "climate change" --directory "data"
+```
+
+Only gather results:
+
+```bash
+python cli.py results --query "machine learning" --directory "ml_data" --total_results 50
+```
+
+Convert already-downloaded files:
+
+```bash
+python cli.py convert --directory "ml_data"
+```
+
 
 ## Known Limitations
 
