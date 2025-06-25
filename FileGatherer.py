@@ -12,6 +12,7 @@ import Headers
 
 
 class FileGatherer:
+    total_gathered = 0
     forbidden_count = 0
     request_error_count = 0
     fetch_failed_count = 0
@@ -73,6 +74,7 @@ class FileGatherer:
 
             content_type = response.headers.get("Content-Type", "").lower()
             if "pdf" in content_type:
+                self.total_gathered += 1
                 pdf_file_obj = io.BytesIO(response.content)
                 filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query, meta_can_be_missing)
                 result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory,
@@ -98,14 +100,15 @@ class FileGatherer:
                         # print(f"\nSkipping {file_url} (not a valid PDF)")
                         continue
 
+                    self.total_gathered += 1
                     pdf_file_obj = io.BytesIO(response.content)
                     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query, meta_can_be_missing)
                     result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory,
                                                            year_start, year_end)
-        print("\nAll results scraped."
-              f"\n\t403 errors: {self.forbidden_count}\n\tRequest Exceptions: {self.request_error_count}"
-              f"\n\tFiles Unable to Fetched: {self.fetch_failed_count}\n\tFiles Skipped: {self.file_skipped_count}"
-              f"\n\tLinks with no files: {self.link_no_file_count}", flush=True)
+        print(f"\nAll results scraped.\n\tFiles Successfully Gathered (unfiltered): {self.total_gathered}"
+              f"\n\t403 Errors: {self.forbidden_count}\n\tRequest Exceptions: {self.request_error_count}"
+              f"\n\tFiles Unable to be Fetched: {self.fetch_failed_count}\n\tFiles Skipped: {self.file_skipped_count}"
+              f"\n\tLinks with No Files: {self.link_no_file_count}", flush=True)
 
     # Checks returned file result from filtering and saves the appropriate data
         # @param response : The GET response of the file
