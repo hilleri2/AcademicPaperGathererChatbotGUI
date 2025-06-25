@@ -16,6 +16,7 @@ class FileGatherer:
     request_error_count = 0
     fetch_failed_count = 0
     file_skipped_count = 0
+    link_no_file_count = 0
 
     # Method that attempts to fetch content from a URL and will retry if failed, with a longer delay each time
     # @param url : The URl to fetch from
@@ -62,7 +63,7 @@ class FileGatherer:
                 url = result['link']
             if url is None:
                 # No link for this index
-                print(f"\nNo link for index {print_index}")
+                self.link_no_file_count += 1
                 continue
             response = self.fetch(url, print_index)
             if not response:
@@ -103,8 +104,8 @@ class FileGatherer:
                                                            year_start, year_end)
         print("\nAll results scraped."
               f"\n\t403 errors: {self.forbidden_count}\n\tRequest Exceptions: {self.request_error_count}"
-              f"\n\tFiles Unable to Fetched: {self.fetch_failed_count}\n\tFiles Skipped: {self.file_skipped_count}",
-              flush=True)
+              f"\n\tFiles Unable to Fetched: {self.fetch_failed_count}\n\tFiles Skipped: {self.file_skipped_count}"
+              f"\n\tLinks with no files: {self.link_no_file_count}", flush=True)
 
     # Checks returned file result from filtering and saves the appropriate data
         # @param response : The GET response of the file
