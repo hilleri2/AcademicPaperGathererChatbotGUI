@@ -111,10 +111,13 @@ python cli.py convert --directory "ml_data"
 
 
 ## Known Limitations
-
+#### 403 Errors
 Many sites respond to automated requests with HTTP 403 errors, "Forbidden Access". The frequency of these errors varies greatly from one prompt to the next, but severely limits the number of papers that are gathered. In an attempt to combat this, several methods were explored and tested (such as free proxies, headless browsers, and user behavior mimicking) with little success.
 
 This remains an active issue.
+
+#### Google Colab
+This tool does not work when run inside of Google Colab, a popular Python notebook resource. Both Colab and Google Scholar are owned by Google, which means that all of Colab's IP addresses are known and flagged by Google Scholar as automated/suspicious traffic.
 
 ## Considerations
 
