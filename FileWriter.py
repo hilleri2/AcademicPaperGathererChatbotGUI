@@ -13,7 +13,7 @@ class FileWriter:
             try:
                 os.makedirs(parent, exist_ok=True)  # Create all parent directories if needed
             except PermissionError:
-                print(f"\nCannot create directory '{parent}' due to a permission error.", flush=true)
+                print(f"\nCannot create directory '{parent}' due to a permission error.", flush=True)
                 value = -1
             except Exception as e:
                 print(f"\nError encountered: {e}", flush=True)
