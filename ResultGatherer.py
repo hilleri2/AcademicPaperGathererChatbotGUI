@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import time
+from fp.fp import FreeProxyException
+from urllib3.exceptions import MaxRetryError
 
 import Headers
 import Proxies
@@ -73,11 +75,19 @@ class ResultGatherer:
             response = session.get(url)
 
             if response.status_code != 200:
-                selected_proxy = Proxies.Proxies().get_proxy()
-                response = session.get(url, proxies=selected_proxy)
+                try:
+                    selected_proxy = Proxies.Proxies().get_python_proxy()  # Use pypi proxies
+                except FreeProxyException:  # If none are available
+                    selected_proxy = Proxies.Proxies().get_rand_proxy()  # Use proxifly instead
+                try:
+                    response = session.get(url, proxies=selected_proxy)
+                except ConnectionRefusedError or ConnectionError or MaxRetryError:
+                    print(f"Connection to {url} could not be established. Moving on.")
+                    break
                 if response.status_code != 200:
                     print(f"Request to '{url}' failed with status code {response.status_code} "
                           f"and proxy '{selected_proxy}'")
+                    break
 
             soup = BeautifulSoup(response.text, "html.parser")
             page_results = self.__get_results_from_page(soup, num)
