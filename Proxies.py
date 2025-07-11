@@ -1,5 +1,6 @@
 import requests
 import random
+from fp.fp import FreeProxy
 
 
 class Proxies:
@@ -30,6 +31,9 @@ class Proxies:
                 # print(f"[✗] Invalid proxy: {proxy}")
         print(f"[+] {len(valid)} proxies validated.")
         return valid
+
+    def get_proxy(self):
+        return FreeProxy(country_id=['US']).get()
 
     def get_rand_proxy(self):
         if self.proxy_list is None:

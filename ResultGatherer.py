@@ -4,6 +4,7 @@ import random
 import time
 
 import Headers
+import Proxies
 
 
 class ResultGatherer:
@@ -70,6 +71,14 @@ class ResultGatherer:
             headers_to_use = Headers.Headers().get_rand_header()
             session.headers = headers_to_use
             response = session.get(url)
+
+            if response.status_code != 200:
+                selected_proxy = Proxies.Proxies().get_proxy()
+                response = response.get(url, proxies=selected_proxy)
+                if response.status_code != 200:
+                    print(f"Request to '{url}' failed with status code {response.status_code} "
+                          f"and proxy '{selected_proxy}'")
+
             soup = BeautifulSoup(response.text, "html.parser")
             page_results = self.__get_results_from_page(soup, num)
             scholar_results.extend(page_results)
