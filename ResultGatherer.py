@@ -74,7 +74,7 @@ class ResultGatherer:
 
             if response.status_code != 200:
                 selected_proxy = Proxies.Proxies().get_proxy()
-                response = response.get(url, proxies=selected_proxy)
+                response = session.get(url, proxies=selected_proxy)
                 if response.status_code != 200:
                     print(f"Request to '{url}' failed with status code {response.status_code} "
                           f"and proxy '{selected_proxy}'")
