@@ -12,18 +12,21 @@ import Headers
 
 
 class FileGatherer:
+    total_files_checked = 0
     total_gathered = 0
     forbidden_count = 0
     request_error_count = 0
     fetch_failed_count = 0
     file_skipped_count = 0
     link_no_file_count = 0
+    no_good_article_found = True
 
     # Method that attempts to fetch content from a URL and will retry if failed, with a longer delay each time
     # @param url : The URl to fetch from
     # @param print_index : The index used for printing status
     # @param max_tries : The maximum number of times to try a request
     def fetch(self, url, print_index, max_tries=2):
+        self.total_files_checked += 1
         for _ in range(max_tries):
             try:
                 headers_to_use = Headers.Headers().get_rand_header_modern()
@@ -105,7 +108,11 @@ class FileGatherer:
                     filter_result = FileFilterer.FileFilterer().filter(pdf_file_obj, query, meta_can_be_missing)
                     result_index = self.handle_file_result(response, filter_result, result_index, path_to_directory,
                                                            year_start, year_end)
-        print(f"\nAll results scraped.\n\tFiles Successfully Gathered (unfiltered): {self.total_gathered}"
+        print("\nAll results scraped.")
+        if self.no_good_article_found:
+            print("\n\tNo relevant papers found. Please refine search query and try again.\n")
+        print(f"\n\tTotal links checked (includes snowballing): {self.total_files_checked + self.link_no_file_count}"
+              f"\n\tFiles Successfully Gathered (unfiltered): {self.total_gathered}"
               f"\n\t403 Errors: {self.forbidden_count}\n\tRequest Exceptions: {self.request_error_count}"
               f"\n\tFiles Unable to be Fetched: {self.fetch_failed_count}\n\tFiles Skipped: {self.file_skipped_count}"
               f"\n\tLinks with No Files: {self.link_no_file_count}", flush=True)
@@ -138,6 +145,8 @@ class FileGatherer:
                                   filter_result[4], 'w', "utf-8")
                 # print(f"File '{file_path}' downloaded.")
                 result_index += 1
+                if self.no_good_article_found is True:  # Only update this value once
+                    self.no_good_article_found = False
         else:
             # print(f"File filtered out.")
             if filter_result[1] is not None:
