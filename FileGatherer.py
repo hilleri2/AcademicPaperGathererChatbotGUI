@@ -68,10 +68,12 @@ class FileGatherer:
             if url is None:
                 # No link for this index
                 self.link_no_file_count += 1
+                self.total_files_checked += 1
                 continue
             response = self.fetch(url, print_index)
             if not response:
                 self.fetch_failed_count += 1
+                self.total_files_checked += 1
                 # print(f"\nFailed to fetch {url}")
                 continue
 
@@ -100,6 +102,7 @@ class FileGatherer:
                     content_type = response.headers.get("Content-Type", "").lower()
                     if "pdf" not in content_type:
                         self.file_skipped_count += 1
+                        self.total_files_checked += 1
                         # print(f"\nSkipping {file_url} (not a valid PDF)")
                         continue
 
@@ -111,7 +114,7 @@ class FileGatherer:
         print("\nAll results scraped.")
         if self.no_good_article_found:
             print("\n\tNo relevant papers found. Please refine search query and try again.\n")
-        print(f"\n\tTotal links checked (includes snowballing): {self.total_files_checked + self.link_no_file_count}"
+        print(f"\n\tTotal links checked (includes snowballing): {self.total_files_checked}"
               f"\n\tFiles Successfully Gathered (unfiltered): {self.total_gathered}"
               f"\n\t403 Errors: {self.forbidden_count}\n\tRequest Exceptions: {self.request_error_count}"
               f"\n\tFiles Unable to be Fetched: {self.fetch_failed_count}\n\tFiles Skipped: {self.file_skipped_count}"
@@ -126,10 +129,10 @@ class FileGatherer:
         # @param year_end : The ending year of a date range - use None if no filtering is desired
     def handle_file_result(self, response: requests.Response, filter_result: tuple, result_index: int,
                            path_to_directory: str, year_start: int or None, year_end: int or None):
-        year_is_good = True
-        if year_start is not None and year_end is not None:
-            year_is_good = self.check_paper_year(year_start, year_end, filter_result[4])
         if filter_result[0]:
+            year_is_good = True
+            if year_start is not None and year_end is not None:
+                year_is_good = self.check_paper_year(year_start, year_end, filter_result[4])
             if DuplicateFilter.DuplicateFilter().add_paper(filter_result[1], filter_result[2],
                                                            filter_result[3], filter_result[4]) and year_is_good:
                 writer = FileWriter.FileWriter()
