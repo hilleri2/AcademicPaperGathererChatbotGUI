@@ -1,0 +1,21 @@
+Abstract
+Large language models (LLMs), such as OpenAI’s GPT-4, Google’s 
+Bard or Meta’s LLaMa, have created unprecedented opportunities for 
+analysing and generating language data on a massive scale. Because 
+language data have a central role in all areas of psychology, this new 
+technology has the potential to transform the field. In this Perspective, 
+we review the foundations of LLMs. We then explain how the way that 
+LLMs are constructed enables them to effectively generate human-like 
+linguistic output without the ability to think or feel like a human. We 
+argue that although LLMs have the potential to advance psychological 
+measurement, experimentation and practice, they are not yet ready 
+for many of the most transformative psychological applications — 
+but further research and development may enable such use. Next, 
+we examine four major concerns about the application of LLMs to 
+psychology, and how each might be overcome. Finally, we conclude 
+with recommendations for investments that could help to address these 
+concerns: field-initiated ‘keystone’ datasets; increased standardization 
+of performance benchmarks; and shared computing and analysis 
+infrastructure to ensure that the future of LLM-powered research is 
+equitable.
+Sections
