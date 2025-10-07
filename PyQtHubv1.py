@@ -70,7 +70,7 @@ class HubWindow(QMainWindow):
         main_layout.addLayout(btn_row)
 
         # Info label
-        info = QLabel("Tip: Close a child window and this Hub will pop back up.")
+        info = QLabel("Closing a window should bring the hub back up. However, that is not working currently.")
         info.setWordWrap(True)
         main_layout.addWidget(info)
 
