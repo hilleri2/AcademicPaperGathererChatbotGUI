@@ -9,6 +9,17 @@ from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QFont
 import openai  # kept if you plan to use it later
 from openai import OpenAI
+import os.path
+
+def create_file(client, file_path):
+    # Handle local file path
+    with open(file_path, "rb") as file_content:
+        result = client.files.create(
+            file=file_content,
+            purpose="assistants"
+            )
+    # print(result.id)
+    return result.id
 
 class ChatBotGUI(QMainWindow):
     def __init__(self):
@@ -77,7 +88,7 @@ class ChatBotGUI(QMainWindow):
         model_layout = QHBoxLayout()
         model_layout.addWidget(QLabel("Model:"))
         self.model_dropdown = QComboBox()
-        self.model_dropdown.addItems(["gpt-4", "gpt-3.5-turbo", "custom-model", "gpt-5"])
+        self.model_dropdown.addItems(["gpt-5", "gpt-4", "gpt-3.5-turbo", "custom-model"])
         model_layout.addWidget(self.model_dropdown)
         settings_layout.addLayout(model_layout)
 
@@ -258,6 +269,7 @@ class ChatBotGUI(QMainWindow):
         introstring = self.intro_edit.text().strip()
         dataintro = self.dataintro_edit.text().strip()
         articles_dir = self.articles_dir_edit.text().strip()
+        #print(articles_dir)
 
         # Add additional article functionality here:
 
@@ -281,25 +293,72 @@ class ChatBotGUI(QMainWindow):
             max_articles, max_tokens
     ):
         if not api_key:
-            return "Please provide an OpenAI API key."
+            return "Error: Please provide an OpenAI API key."
+
+        if not articles_dir:
+            return "Error: Please provide a file path for article pdfs to search"
+        #print(articles_dir)
 
         # Prompting Chatbot
         if self.client == None:
             self.client = OpenAI(api_key=api_key)
 
+        #NEW FILE SEARCH PROMPTING
+        # print(articles_dir)
+        # print(filepath for filepath in articles_dir)
+        #return
+        articlepathlist = [os.path.join(articles_dir, name) for name in os.listdir(articles_dir) if name.endswith(".pdf")]
+        file_id_list = [create_file(self.client, filepath) for filepath in articlepathlist]
+
+        vector_store = self.client.vector_stores.create(
+            name="knowledge_base"
+        )
+
+        for id in file_id_list:
+            self.client.vector_stores.files.create(
+                vector_store_id=vector_store.id,
+                file_id=id
+            )
+
+        # Check Status: Run this code until the file is ready to be used (i.e., when the status is completed).
+        # print(f"Analyzing files")
+        self.chat_display.append(f"Analyzing files")
+
+        result = self.client.vector_stores.files.list(
+            vector_store_id=vector_store.id
+        )
+
+        # print(f"Querying Model")
+        self.chat_display.append(f"Querying Model")
+
         response = self.client.responses.create(
             model=model,
             input=prompt,
-            # tools=[{
-            #     "type": "file_search",
-            #     "vector_store_ids": [vector_store.id]
-            # }],
-            # include=["file_search_call.results"]
+            tools=[{
+                "type": "file_search",
+                "vector_store_ids": [vector_store.id]
+            }],
+            include=["file_search_call.results"]
         )
-
         response_message = response.output_text
 
         return response_message
+
+        # print(response)
+
+
+        # OLD BASIC PROMPTING
+        # response = self.client.responses.create(
+        #     model=model,
+        #     input=prompt,
+        #     # tools=[{
+        #     #     "type": "file_search",
+        #     #     "vector_store_ids": [vector_store.id]
+        #     # }],
+        #     # include=["file_search_call.results"]
+        # )
+
+
 
         #     (
         #     f"[{model} | Temp: {temperature}] Echo: {prompt}\n"
