@@ -1,9 +1,9 @@
-# PyQtChat.py
+# PyQtChatv2.py
 import sys, os, os.path
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QTextEdit, QLineEdit, QPushButton, QLabel, QComboBox,
-    QSlider, QGroupBox, QCheckBox, QFileDialog
+    QSlider, QGroupBox, QCheckBox, QFileDialog, QToolButton, QStyle, QSizePolicy, QSpacerItem
 )
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -121,7 +121,7 @@ class ChatWorker(QObject):
                 # keep include (SDK may change behavior; if it errors, we catch)
                 include=["file_search_call.results"],
                 max_output_tokens=self.max_tokens if self.max_tokens else None,
-                temperature=self.temperature if self.model != "gpt-5" else None
+                temperature=self.temperature if self.model == "gpt-4" or self.model == "gpt-3.5-turbo" else None
             )
 
             # Make sure we can extract text robustly
@@ -142,7 +142,7 @@ class ChatBotGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PyQt5 Chatbot with OpenAI API Key")
-        self.setGeometry(200, 200, 700, 820)
+        self.setGeometry(200, 200, 700, 860)
         self.client = None
         self._thread = None
         self._worker = None
@@ -199,9 +199,9 @@ class ChatBotGUI(QMainWindow):
         max_articles_layout.addWidget(QLabel("Max Articles:"))
         self.max_articles_slider = QSlider(Qt.Horizontal)
         self.max_articles_slider.setMinimum(0)
-        self.max_articles_slider.setMaximum(100)
-        self.max_articles_slider.setValue(10)
-        self.max_articles_slider.setTickInterval(100)
+        self.max_articles_slider.setMaximum(30)
+        self.max_articles_slider.setValue(5)
+        self.max_articles_slider.setTickInterval(30)
         self.max_articles_slider.setSingleStep(1)
         self.max_articles_slider.valueChanged.connect(self.update_max_articles_label)
         max_articles_layout.addWidget(self.max_articles_slider)
@@ -229,6 +229,20 @@ class ChatBotGUI(QMainWindow):
 
         # Temperature
         temp_layout = QHBoxLayout()
+
+        # (3) Info icon with tooltip next to the prompt line
+        info_btn2 = QToolButton()
+        info_btn2.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxInformation))
+        info_btn2.setAutoRaise(True)
+        info_btn2.setToolTip(
+            "The temperature control was removed from the API for models gpt-5 and onward, so changing it will not have any effect for those models."
+            # "Usage tips:\n"
+            # "• Keep questions specific for better results.\n"
+            # "• PDFs in the selected folder are used as the knowledge base.\n"
+            # "• Placeholder: add policy/stipulation text here."
+        )
+        temp_layout.addWidget(info_btn2)
+
         temp_layout.addWidget(QLabel("Temperature:"))
         self.temp_slider = QSlider(Qt.Horizontal)
         self.temp_slider.setMinimum(0)
@@ -240,6 +254,10 @@ class ChatBotGUI(QMainWindow):
         self.temp_value_label = QLabel("0.7")
         self.temp_value_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         temp_layout.addWidget(self.temp_value_label)
+
+
+
+        settings_layout.addLayout(temp_layout)
         settings_group.setLayout(settings_layout)
         main_layout.addWidget(settings_group)
 
@@ -257,26 +275,52 @@ class ChatBotGUI(QMainWindow):
         dir_layout.addWidget(self.articles_dir_btn)
         context_layout.addLayout(dir_layout)
 
+        # -------- Advanced collapsible section --------
+        # Toggle button (looks like a header)
+        adv_header = QHBoxLayout()
+        self.adv_toggle_btn = QToolButton()
+        self.adv_toggle_btn.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.adv_toggle_btn.setArrowType(Qt.RightArrow)  # points right when collapsed
+        self.adv_toggle_btn.setText("Advanced")
+        self.adv_toggle_btn.setCheckable(True)
+        self.adv_toggle_btn.setChecked(False)
+        self.adv_toggle_btn.clicked.connect(self._toggle_advanced)
+        adv_header.addWidget(self.adv_toggle_btn)
+        adv_header.addItem(QSpacerItem(20, 10, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        context_layout.addLayout(adv_header)
+
+        # The advanced content container (hidden by default)
+        self.advanced_widget = QWidget()
+        adv_form_layout = QVBoxLayout(self.advanced_widget)
+        adv_form_layout.setContentsMargins(24, 0, 0, 0)  # indent a bit
+
         # botrole
-        context_layout.addWidget(QLabel("botrole"))
+        role_label = QLabel("botrole")
+        adv_form_layout.addWidget(role_label)
         self.role_edit = QTextEdit()
         self.role_edit.setPlainText(
             "You are a research assistant. Your job is to answer questions about articles provided to you."
         )
         self.role_edit.setFixedHeight(60)
-        context_layout.addWidget(self.role_edit)
+        adv_form_layout.addWidget(self.role_edit)
 
         # introstring
-        context_layout.addWidget(QLabel("introstring"))
+        intro_label = QLabel("introstring")
+        adv_form_layout.addWidget(intro_label)
         self.intro_edit = QLineEdit()
         self.intro_edit.setText("Use the articles provided to answer the subsequent question.")
-        context_layout.addWidget(self.intro_edit)
+        adv_form_layout.addWidget(self.intro_edit)
 
         # dataintro
-        context_layout.addWidget(QLabel("dataintro"))
+        dataintro_label = QLabel("dataintro")
+        adv_form_layout.addWidget(dataintro_label)
         self.dataintro_edit = QLineEdit()
         self.dataintro_edit.setText("Here is the next article data section")
-        context_layout.addWidget(self.dataintro_edit)
+        adv_form_layout.addWidget(self.dataintro_edit)
+
+        self.advanced_widget.setVisible(False)
+        context_layout.addWidget(self.advanced_widget)
+        # -------- End Advanced section --------
 
         context_group.setLayout(context_layout)
         main_layout.addWidget(context_group)
@@ -285,14 +329,40 @@ class ChatBotGUI(QMainWindow):
         main_layout.addWidget(QLabel("Chatbot Prompt: Type your question for the assistant and press Enter or click Send."))
 
         input_layout = QHBoxLayout()
+
+        # (3) Info icon with tooltip next to the prompt line
+        info_btn = QToolButton()
+        info_btn.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxInformation))
+        info_btn.setAutoRaise(True)
+        info_btn.setToolTip(
+            "This tool doesn't have the ability to hold ongoing conversations.\n"
+            "Repeated inputs will be treated as individual conversations without recollection of what came before."
+            # "Usage tips:\n"
+            # "• Keep questions specific for better results.\n"
+            # "• PDFs in the selected folder are used as the knowledge base.\n"
+            # "• Placeholder: add policy/stipulation text here."
+        )
+        input_layout.addWidget(info_btn)
+
         self.entry = QLineEdit()
         self.entry.setPlaceholderText("Type your message…")
         self.entry.returnPressed.connect(self.send_message)
         input_layout.addWidget(self.entry)
+
         self.send_button = QPushButton("Send")
         self.send_button.clicked.connect(self.send_message)
         input_layout.addWidget(self.send_button)
         main_layout.addLayout(input_layout)
+
+        # Output header row with Copy button (2)
+        out_header = QHBoxLayout()
+        out_header.addWidget(QLabel("Output"))
+        out_header.addItem(QSpacerItem(20, 10, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        self.copy_button = QPushButton("Copy")
+        self.copy_button.setToolTip("Copy all output to clipboard")
+        self.copy_button.clicked.connect(self.copy_output_to_clipboard)
+        out_header.addWidget(self.copy_button)
+        main_layout.addLayout(out_header)
 
         # Chat display
         self.chat_display = QTextEdit()
@@ -306,6 +376,12 @@ class ChatBotGUI(QMainWindow):
 
         # Adopt current app font
         self.setFont(QApplication.instance().font())
+
+    # --- Advanced toggle ---
+    def _toggle_advanced(self, checked: bool):
+        self.advanced_widget.setVisible(checked)
+        # Rotate the arrow to indicate expanded/collapsed
+        self.adv_toggle_btn.setArrowType(Qt.DownArrow if checked else Qt.RightArrow)
 
     # --- font handling (global) ---
     def _on_font_change(self, size: int):
@@ -345,6 +421,11 @@ class ChatBotGUI(QMainWindow):
         self.entry.setEnabled(not in_progress)
         self.model_dropdown.setEnabled(not in_progress)
         self.setCursor(Qt.BusyCursor if in_progress else Qt.ArrowCursor)
+
+    def copy_output_to_clipboard(self):
+        QApplication.clipboard().setText(self.chat_display.toPlainText())
+        # Optional: small feedback line in the output
+        self.chat_display.append("✅ Output copied to clipboard.")
 
     def send_message(self):
         # Prevent overlapping runs (this was a common source of “hangs”)
