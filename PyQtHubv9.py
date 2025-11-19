@@ -54,8 +54,8 @@ class MainWindow(QWidget):
 
         # Launch buttons
         btn_row = QHBoxLayout()
-        for label, module in [("Open PyQt5v9", "PyQt5v9"),
-                              ("Open PyQtCLIv9", "PyQtCLIv9")]:
+        for label, module in [("Open Responses File Search Chatbot", "PyQtChatv2"),
+                              ("Open Article Scraper", "PyQtCLIv9")]:
             b = QPushButton(label)
             b.clicked.connect(lambda _=False, m=module: self.open_child(m))
             btn_row.addWidget(b)
