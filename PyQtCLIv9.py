@@ -11,7 +11,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt, QEvent
 from PyQt5.QtGui import QIntValidator, QFont
 
 # Import the existing functions from your CLI module
-from cli import run_result_gatherer, run_file_gatherer, run_text_converter
+from cli import run_result_gatherer, run_file_gatherer, run_text_converter, run_arxiv
 
 class EmittingStream:
     def __init__(self, signal):
@@ -55,6 +55,22 @@ class Worker(QThread):
                 results = run_result_gatherer(
                     self.query, self.directory,
                     self.total, self.year_start, self.year_end
+                )
+                self.progress.emit(f"Gathered {len(results)} results.")
+
+                run_file_gatherer(
+                    self.query, self.directory,
+                    self.year_start, self.year_end, self.meta
+                )
+                self.progress.emit("Files gathered.")
+
+                run_text_converter(self.directory)
+                self.progress.emit("Text conversion completed.")
+
+            elif self.cmd == 'all-arxiv':
+                results = run_arxiv(
+                    self.query, self.directory,
+                    self.total, self.meta
                 )
                 self.progress.emit(f"Gathered {len(results)} results.")
 
@@ -130,11 +146,16 @@ class MainWindow(QMainWindow):
         cmd_layout = QHBoxLayout()
         cmd_label = QLabel("Scraping Command:")
         self.cmd_combo = QComboBox()
-        self.cmd_combo.addItems(["all", "results", "files", "convert"])
+        self.cmd_combo.addItems(["all", "all-arxiv", "results", "files", "convert"])
         self.cmd_combo.currentTextChanged.connect(self.update_fields)
         cmd_layout.addWidget(cmd_label)
         cmd_layout.addWidget(self.cmd_combo)
         layout.addLayout(cmd_layout)
+
+        # self.arxiv_chk = QCheckBox("Also search Arxiv?")
+        # self.arxiv_chk.setChecked(False)
+        # self.arxiv_chk.stateChanged.connect(self.update_range_fields)
+        # layout.addWidget(self.arxiv_chk)
 
         self.query_label = QLabel("Search Query:")
         self.query_edit = QLineEdit()
@@ -256,14 +277,15 @@ class MainWindow(QMainWindow):
 
     def update_fields(self, cmd):
         is_all = cmd == "all"
+        is_arxiv = cmd == "all-arxiv"
         is_res = cmd == "results"
         is_files = cmd == "files"
         is_conv = cmd == "convert"
 
-        self.query_label.setVisible(is_all or is_res or is_files)
-        self.query_edit.setVisible(is_all or is_res or is_files)
-        self.tot_label.setVisible(is_all or is_res)
-        self.tot_spin.setVisible(is_all or is_res)
+        self.query_label.setVisible(is_all or is_arxiv or is_res or is_files)
+        self.query_edit.setVisible(is_all or is_arxiv or is_res or is_files)
+        self.tot_label.setVisible(is_all or is_arxiv or is_res)
+        self.tot_spin.setVisible(is_all or is_arxiv or is_res)
 
         hide_dates = is_conv
         self.range_chk.setVisible(not hide_dates)
@@ -272,7 +294,7 @@ class MainWindow(QMainWindow):
         self.end_label.setVisible(not hide_dates)
         self.end_edit.setVisible(not hide_dates)
 
-        self.meta_chk.setVisible(is_all or is_files)
+        self.meta_chk.setVisible(is_all or is_arxiv or is_files)
 
     def update_range_fields(self, state):
         enabled = (state == Qt.Checked)
@@ -290,6 +312,7 @@ class MainWindow(QMainWindow):
         directory = self.dir_edit.text().strip()
         total = self.tot_spin.value()
         use_range = self.range_chk.isChecked()
+        # arxiv_search = self.arxiv_chk.isChecked()
         ys = self.start_edit.text().strip() if use_range else ''
         ye = self.end_edit.text().strip() if use_range else ''
         year_start = int(ys) if ys else None
