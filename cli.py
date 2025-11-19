@@ -2,10 +2,10 @@ import argparse
 import os
 import json
 
-import AcademicPaperGatherer.FileGatherer
-import AcademicPaperGatherer.ResultGatherer
-import AcademicPaperGatherer.TextConverterAndExtractor
-import AcademicPaperGatherer.ArxivScraper
+import FileGatherer
+import ResultGatherer
+import TextConverterAndExtractor
+import ArxivScraper
 
 
 # Method that validates a CLI parameter is a positive integer

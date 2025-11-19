@@ -6,8 +6,8 @@ from fp.fp import FreeProxyException
 from requests.exceptions import ProxyError, ConnectionError
 from urllib3.exceptions import MaxRetryError
 
-import AcademicPaperGatherer.Headers
-import AcademicPaperGatherer.Proxies
+import Headers
+import Proxies
 
 
 class ResultGatherer:
