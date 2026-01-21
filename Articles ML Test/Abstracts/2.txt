@@ -1,6 +1,0 @@
-Abstract
-Machine learning (ML), and particularly algorithms based on artificial neural networks 
-(ANNs), constitute a field of research lying at the intersection of different disciplines such 
-as mathematics, statistics, computer science and neuroscience. This approach is character-
-ized by the use of algorithms to extract knowledge from large and heterogeneous data sets. 
-In addition to offering a brief

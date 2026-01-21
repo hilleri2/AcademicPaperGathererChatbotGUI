@@ -1,1 +1,0 @@
-New Timing Sequencer Application in Python with Qt - Development Workflow and Lessons Learnt
