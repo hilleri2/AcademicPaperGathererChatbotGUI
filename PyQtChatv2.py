@@ -190,7 +190,7 @@ class ChatBotGUI(QMainWindow):
         model_layout = QHBoxLayout()
         model_layout.addWidget(QLabel("Model:"))
         self.model_dropdown = QComboBox()
-        self.model_dropdown.addItems(["gpt-5", "gpt-4", "gpt-3.5-turbo", "custom-model"])
+        self.model_dropdown.addItems(["gpt-5.2", "gpt-5", "gpt-4o", "gpt-3.5-turbo", "custom-model"])
         model_layout.addWidget(self.model_dropdown)
         settings_layout.addLayout(model_layout)
 
