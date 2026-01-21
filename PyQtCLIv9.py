@@ -11,7 +11,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt, QEvent
 from PyQt5.QtGui import QIntValidator, QFont
 
 # Import the existing functions from your CLI module
-from cli import run_result_gatherer, run_file_gatherer, run_text_converter, run_arxiv
+from APG.cli import run_result_gatherer, run_file_gatherer, run_text_converter, run_arxiv
 
 class EmittingStream:
     def __init__(self, signal):
