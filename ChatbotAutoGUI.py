@@ -1,4 +1,4 @@
-# PyQtChatv2.py
+# ChatbotAutoGUI.py
 import sys, os, os.path
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
