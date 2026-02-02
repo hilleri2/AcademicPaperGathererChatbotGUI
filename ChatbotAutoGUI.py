@@ -61,9 +61,9 @@ class ChatWorker(QObject):
                 self.error.emit("Error: No .pdf files found in the selected directory.")
                 return
 
-            # Respect Max Articles (if set >0)
+            # Check for max article count
             if self.max_articles and self.max_articles > 0:
-                article_paths = article_paths[: self.max_articles]
+                article_paths = article_paths
 
             self.progress.emit(f"Found {len(article_paths)} PDF(s). Uploading…")
 
@@ -76,7 +76,7 @@ class ChatWorker(QObject):
                     file_ids.append(fid)
                 except Exception as e:
                     # Continue on individual file errors, but report them
-                    self.progress.emit(f"⚠️ Skipped {os.path.basename(p)} — {e}")
+                    self.progress.emit(f"Skipped {os.path.basename(p)} — {e}")
 
             if not file_ids:
                 self.error.emit("Error: Failed to upload any files.")
@@ -104,7 +104,7 @@ class ChatWorker(QObject):
                 if statuses <= {"completed"}:
                     break
                 if "failed" in statuses and "in_progress" not in statuses:
-                    self.progress.emit("⚠️ Some files failed to index; continuing with available files.")
+                    self.progress.emit("Some files failed to index; continuing with available files.")
                     break
                 time.sleep(1.0)
 
