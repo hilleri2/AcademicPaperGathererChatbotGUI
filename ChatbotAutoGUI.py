@@ -216,7 +216,7 @@ class ChatBotGUI(QMainWindow):
         self._TOK_STEP = 256
         self.max_tokens_slider = QSlider(Qt.Horizontal)
         self.max_tokens_slider.setMinimum(1)   # 256
-        self.max_tokens_slider.setMaximum(50000 // self._TOK_STEP)
+        self.max_tokens_slider.setMaximum(100000 // self._TOK_STEP)
         self.max_tokens_slider.setValue(4096 // self._TOK_STEP)
         self.max_tokens_slider.setTickInterval(4)
         self.max_tokens_slider.setSingleStep(1)

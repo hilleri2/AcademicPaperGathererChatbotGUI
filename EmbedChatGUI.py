@@ -17,7 +17,7 @@ from openai import OpenAI
 
 # --------------------- Token counting (tiktoken optional) --------------------- #
 
-def num_tokens(text: str, model: str = "gpt-4o") -> int:
+def num_tokens(text: str, model: str = "gpt-5") -> int:
     """
     Best-effort token estimation.
     If tiktoken is installed, use it. Otherwise approximate.
@@ -135,6 +135,7 @@ def load_Articles(
     dedup_dict: Dict[str, int] = {}
 
     for idx, text_name in enumerate(text_names, start=1):
+        
         base = os.path.splitext(text_name)[0]
         emb_name = f"{base}.txt"
         if emb_name not in emb_set:
@@ -177,7 +178,7 @@ def load_Articles(
 
         if progress_cb and (idx % 25 == 0 or idx == 1 or idx == len(text_names)):
             progress_cb(f"Loading Articles... {idx}/{len(text_names)} (matched: {stats['matched']})")
-
+    
     return items, stats
 
 
@@ -515,7 +516,8 @@ class EmbeddingChatGUI(QMainWindow):
         chat_model_layout = QHBoxLayout()
         chat_model_layout.addWidget(QLabel("Chat Model:"))
         self.chat_model_dropdown = QComboBox()
-        self.chat_model_dropdown.addItems(["gpt-4o", "gpt-4.1", "gpt-5", "gpt-3.5-turbo", "custom-model"])
+        # self.chat_model_dropdown.addItems(["gpt-4o", "gpt-4.1", "gpt-5", "gpt-3.5-turbo", "custom-model"])
+        self.chat_model_dropdown.addItems(["gpt-5.2", "gpt-5", "gpt-4o", "gpt-3.5-turbo", "custom-model"])
         chat_model_layout.addWidget(self.chat_model_dropdown)
         settings_layout.addLayout(chat_model_layout)
 
@@ -557,7 +559,7 @@ class EmbeddingChatGUI(QMainWindow):
         budget_layout.addWidget(QLabel("Token budget:"))
         self.budget_slider = QSlider(Qt.Horizontal)
         self.budget_slider.setMinimum(512)
-        self.budget_slider.setMaximum(50000)
+        self.budget_slider.setMaximum(100000)
         self.budget_slider.setValue(6000)
         self.budget_slider.setTickInterval(2000)
         self.budget_slider.setSingleStep(256)
@@ -804,7 +806,7 @@ class EmbeddingChatGUI(QMainWindow):
         api_key = self.api_key_field.text().strip()
         chat_model = self.chat_model_dropdown.currentText().strip()
         emb_model = self.emb_model_dropdown.currentText().strip()
-        temperature = self.temp_slider.value() / 10.0
+        temperature = self.temp_slider.value() / 10.0 if chat_model == "gpt-4" or chat_model == "gpt-3.5-turbo" else None
         token_budget = self.budget_slider.value()
         nmax = self.nmax_slider.value()
 
