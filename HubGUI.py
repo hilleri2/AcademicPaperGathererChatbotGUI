@@ -34,7 +34,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Main Menu")
-        self.resize(420, 160)
+        self.resize(550, 160) # Increased width slightly to accommodate the 5th button
         self._child = None
 
         layout = QVBoxLayout(self)
@@ -57,7 +57,8 @@ class MainWindow(QWidget):
         for label, module in [("Open Article Scraper", "ArticleScraperGUI"),
                               ("Open Auto File Search Chatbot", "ChatbotAutoGUI"),
                               ("Open Article Embedder", "EmbedderGUI"),
-                              ("Open Embed File Search Chatbot", "EmbedChatGUI")]:
+                              ("Open Embed File Search Chatbot", "EmbedChatGUI"),
+                              ("Open Manual PDF Converter", "ManualPDFConversion")]: # Added new module here
             b = QPushButton(label)
             b.clicked.connect(lambda _=False, m=module: self.open_child(m))
             btn_row.addWidget(b)
